@@ -11,7 +11,7 @@
     <header class="hero">
       <p class="eyebrow">Kart Competitie</p>
       <h1>🏁 Racebeheer & Live Leaderboard</h1>
-      <p class="sub">Firebase gekoppeld</p>
+      <p class="sub">Deze versie gebruikt Firebase Realtime Database zodat meerdere apparaten tegelijk dezelfde data zien.</p>
       <div id="connectionStatus" class="status">🟡 Verbinden...</div>
     </header>
 
@@ -20,40 +20,82 @@
         <h2>Nieuwe race</h2>
 
         <div class="field">
-          <label>Race naam</label>
-          <input id="raceName" type="text">
+          <label for="raceName">Race naam</label>
+          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1">
         </div>
 
         <div class="field">
-          <label>Datum</label>
+          <label for="raceDate">Datum</label>
           <input id="raceDate" type="date">
         </div>
 
-        <div class="section-row">
-          <h3>Sprint 1</h3>
-          <button id="addSprint1DriverBtn" class="secondary">+ Driver</button>
+        <div class="sprint-card">
+          <div class="section-row">
+            <h3>Sprint 1 (10 min)</h3>
+            <button id="addSprint1DriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
+          </div>
+          <div id="sprint1DriversList" class="drivers-list"></div>
         </div>
-        <div id="sprint1DriversList" class="drivers-list"></div>
 
-        <div class="section-row">
-          <h3>Sprint 2</h3>
-          <button id="addSprint2DriverBtn" class="secondary">+ Driver</button>
+        <div class="sprint-card">
+          <div class="section-row">
+            <h3>Sprint 2 (10 min)</h3>
+            <button id="addSprint2DriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
+          </div>
+          <div id="sprint2DriversList" class="drivers-list"></div>
         </div>
-        <div id="sprint2DriversList" class="drivers-list"></div>
 
         <div class="actions">
-          <button id="saveRaceBtn">Race opslaan</button>
+          <button id="saveRaceBtn" type="button">Race opslaan</button>
+          <button id="resetFormBtn" class="secondary" type="button">Leegmaken</button>
         </div>
 
-        <p id="message"></p>
+        <p id="message" class="message"></p>
+      </section>
+
+      <section class="card">
+        <div class="section-row">
+          <h2>🏆 Seizoensstand</h2>
+          <button id="clearAllBtn" class="danger" type="button">Alles wissen</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Driver</th>
+                <th>Punten</th>
+                <th>Races</th>
+                <th>Beste sprint</th>
+              </tr>
+            </thead>
+            <tbody id="seasonBody"></tbody>
+          </table>
+        </div>
       </section>
 
       <section class="card full">
-        <div class="section-row">
-          <h2>Race geschiedenis</h2>
-          <button id="exportBtn" class="secondary">Export JSON</button>
+        <h2>📜 Race overzicht</h2>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Driver</th>
+                <th>Race</th>
+                <th>Sprint 1</th>
+                <th>Sprint 2</th>
+                <th>Totaal punten</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+          </table>
         </div>
-        <div id="historyList"></div>
+      </section>
+
+      <section class="card full">
+        <h2>🗂️ Race geschiedenis</h2>
+        <div id="historyList" class="history-list"></div>
       </section>
     </main>
   </div>
