@@ -1,1 +1,37 @@
-<!DOCTYPE html><html><head><meta charset='UTF-8'><title>Kart Competitie</title><link rel='stylesheet' href='styles.css'></head><body><h1>🏁 Kart Competitie Dashboard</h1><script src='script.js'></script></body></html>
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Kart Competitie</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<h1>🏁 Kart Competitie Dashboard</h1>
+
+<section>
+<h2>Nieuwe Race Toevoegen</h2>
+<input id="raceName" placeholder="Race naam">
+<textarea id="raceData" placeholder="Naam,Punten per regel"></textarea>
+<button onclick="addRace()">Race Opslaan</button>
+</section>
+
+<section>
+<h2>🏆 Leaderboard</h2>
+<ul id="leaderboard"></ul>
+</section>
+
+<section>
+<h2>📜 Race Geschiedenis</h2>
+<ul id="history"></ul>
+</section>
+
+<section>
+<h2>💾 Data</h2>
+<button onclick="exportData()">Export JSON</button>
+<input type="file" onchange="importData(event)">
+</section>
+
+<script src="script.js"></script>
+</body>
+</html>

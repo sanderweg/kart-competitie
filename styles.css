@@ -1,1 +1,28 @@
-body{background:#111;color:#fff;font-family:Arial;padding:20px}
+body {
+font-family: Arial;
+background: #111;
+color: white;
+padding: 20px;
+}
+
+h1 { color: #00ffcc; }
+
+section {
+margin-bottom: 30px;
+padding: 15px;
+background: #222;
+border-radius: 10px;
+}
+
+input, textarea {
+width: 100%;
+margin: 5px 0;
+padding: 8px;
+}
+
+button {
+padding: 10px;
+background: #00ffcc;
+border: none;
+cursor: pointer;
+}
