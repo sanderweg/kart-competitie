@@ -1,4 +1,4 @@
-const STORAGE_KEY = "kart_competitie_races_v3";
+const STORAGE_KEY = "kart_competitie_races_v4";
 const POINTS_MAP = {
   1: 25, 2: 22, 3: 20, 4: 19, 5: 18, 6: 17, 7: 16, 8: 15, 9: 14, 10: 13, 11: 12,
   12: 11, 13: 10, 14: 9, 15: 8, 16: 7, 17: 6, 18: 5, 19: 4, 20: 3, 21: 2, 22: 1
@@ -53,7 +53,7 @@ function renderPointsOverview() {
     .join("");
 }
 
-function addDriverRow(name = "", position = "", points = "") {
+function addDriverRow(name = "", position = "") {
   const row = document.createElement("div");
   row.className = "driver-row";
   row.innerHTML = `
@@ -67,7 +67,7 @@ function addDriverRow(name = "", position = "", points = "") {
     </div>
     <div class="field">
       <label>Punten</label>
-      <input type="number" class="driver-points-preview" value="${points}" disabled />
+      <input type="number" class="driver-points-preview" value="" disabled />
     </div>
     <button type="button" class="remove-driver">Verwijderen</button>
   `;
@@ -77,7 +77,7 @@ function addDriverRow(name = "", position = "", points = "") {
 
   function updatePreview() {
     const position = Number(positionInput.value);
-    pointsPreview.value = POINTS_MAP[position] ?? 0;
+    pointsPreview.value = POINTS_MAP[position] ?? "";
   }
 
   positionInput.addEventListener("input", updatePreview);
@@ -116,24 +116,18 @@ function saveRace() {
     setMessage("Vul eerst een racenaam in.", "error");
     return;
   }
-
   if (!raceDate) {
     setMessage("Kies eerst een datum.", "error");
     return;
   }
-
   if (!drivers.length) {
     setMessage("Voeg minimaal 1 driver toe.", "error");
     return;
   }
 
   const invalidDriver = drivers.find(driver =>
-    !driver.name ||
-    Number.isNaN(driver.position) ||
-    driver.position < 1 ||
-    driver.position > 22
+    !driver.name || Number.isNaN(driver.position) || driver.position < 1 || driver.position > 22
   );
-
   if (invalidDriver) {
     setMessage("Elke driver moet een naam en een positie tussen 1 en 22 hebben.", "error");
     return;
@@ -142,7 +136,7 @@ function saveRace() {
   const positions = drivers.map(driver => driver.position);
   const duplicatePosition = positions.find((pos, index) => positions.indexOf(pos) !== index);
   if (duplicatePosition) {
-    setMessage(`Positie ${duplicatePosition} is dubbel ingevuld. Elke positie mag maar 1 keer voorkomen.`, "error");
+    setMessage(`Positie ${duplicatePosition} is dubbel ingevuld.`, "error");
     return;
   }
 
@@ -177,46 +171,42 @@ function resetForm(clearMessage = true) {
   if (clearMessage) setMessage("");
 }
 
-function render() {
-  renderLeaderboard();
-  renderHistory();
+function buildLeaderboardRows() {
+  const rows = [];
+  races.forEach(race => {
+    race.drivers.forEach(driver => {
+      rows.push({
+        driver: driver.name,
+        race: race.name,
+        position: Number(driver.position),
+        points: POINTS_MAP[Number(driver.position)] ?? Number(driver.points) ?? 0,
+        date: race.date
+      });
+    });
+  });
+  return rows.sort((a, b) =>
+    b.points - a.points ||
+    a.position - b.position ||
+    new Date(b.date) - new Date(a.date) ||
+    a.driver.localeCompare(b.driver, "nl")
+  );
 }
 
 function renderLeaderboard() {
-  const totals = {};
+  const rows = buildLeaderboardRows();
 
-  races.forEach(race => {
-    race.drivers.forEach(driver => {
-      if (!totals[driver.name]) {
-        totals[driver.name] = { points: 0, races: 0, bestPosition: Infinity };
-      }
-      totals[driver.name].points += Number(driver.points) || 0;
-      totals[driver.name].races += 1;
-      totals[driver.name].bestPosition = Math.min(totals[driver.name].bestPosition, Number(driver.position));
-    });
-  });
-
-  const sorted = Object.entries(totals)
-    .map(([name, data]) => ({ name, ...data }))
-    .sort((a, b) =>
-      b.points - a.points ||
-      a.bestPosition - b.bestPosition ||
-      b.races - a.races ||
-      a.name.localeCompare(b.name, "nl")
-    );
-
-  if (!sorted.length) {
+  if (!rows.length) {
     leaderboardBody.innerHTML = `<tr><td colspan="5" class="empty">Nog geen races opgeslagen.</td></tr>`;
     return;
   }
 
-  leaderboardBody.innerHTML = sorted.map((driver, index) => `
+  leaderboardBody.innerHTML = rows.map((row, index) => `
     <tr>
       <td>${index + 1}</td>
-      <td>${escapeHtml(driver.name)}</td>
-      <td>${driver.points}</td>
-      <td>${driver.races}</td>
-      <td>P${driver.bestPosition}</td>
+      <td>${escapeHtml(row.driver)}</td>
+      <td>${escapeHtml(row.race)}</td>
+      <td>P${row.position}</td>
+      <td>${row.points}</td>
     </tr>
   `).join("");
 }
@@ -239,7 +229,7 @@ function renderHistory() {
       <ol class="race-drivers">
         ${[...race.drivers]
           .sort((a, b) => a.position - b.position)
-          .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
+          .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${POINTS_MAP[Number(driver.position)] ?? 0} punten</li>`)
           .join("")}
       </ol>
     </article>
@@ -289,6 +279,7 @@ function importData(event) {
         ...race,
         drivers: (race.drivers || []).map(driver => ({
           ...driver,
+          position: Number(driver.position),
           points: POINTS_MAP[Number(driver.position)] ?? Number(driver.points) ?? 0
         }))
       }));
