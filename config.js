@@ -1,7 +1,3 @@
-// Vul hier jouw Firebase web config in.
-// Deze gegevens krijg je in Firebase Console > Project settings > Your apps > Web app.
-// Zet hieronder ook de databaseURL van je NIEUWE Realtime Database instance.
-
 export const firebaseConfig = {
   apiKey: "AIzaSyAHJ_U7_H7rO1CLDEmgYm2bY-956R2B3jI",
   authDomain: "karting-competitie.firebaseapp.com",
