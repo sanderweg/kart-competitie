@@ -3,130 +3,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kart Competitie Firebase Auth</title>
+  <title>Kart Competitie</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
-<body>
-  <div class="app">
-    <header class="hero">
-      <div>
-        <p class="eyebrow">Kart Competitie</p>
-        <h1>🏁 Racebeheer & Live Leaderboard</h1>
-        <p class="sub">Iedereen kan kijken. Alleen ingelogde gebruikers mogen gegevens wijzigen.</p>
-      </div>
-      <div class="hero-right">
-        <div id="connectionStatus" class="status">🟡 Verbinden...</div>
-        <div id="authStatus" class="status secondary-status">🔒 Niet ingelogd</div>
-      </div>
-    </header>
+<body class="landing-body">
+  <div class="landing-shell">
+    <section class="landing-card hero-card">
+      <p class="eyebrow">Kart Competitie</p>
+      <h1>🏁 Welkom bij de kart competitie</h1>
+      <p class="sub">
+        Bekijk live de seizoensstand, race-overzichten en resultaten van alle sprint races.
+        Beheerders kunnen na inloggen nieuwe races toevoegen en resultaten aanpassen.
+      </p>
 
-    <section class="card auth-card">
-      <div class="section-row">
-        <h2>Beheer login</h2>
+      <div class="landing-actions">
+        <a class="btn btn-primary" href="public.html">Bekijk leaderboard</a>
+        <a class="btn btn-secondary" href="login.html">Beheerder login</a>
       </div>
-      <div class="auth-grid">
-        <div class="field">
-          <label for="emailInput">E-mailadres</label>
-          <input id="emailInput" type="email" placeholder="beheer@voorbeeld.nl" />
-        </div>
-        <div class="field">
-          <label for="passwordInput">Wachtwoord</label>
-          <input id="passwordInput" type="password" placeholder="Wachtwoord" />
-        </div>
-      </div>
-      <div class="actions">
-        <button id="loginBtn" type="button">Inloggen</button>
-        <button id="logoutBtn" class="secondary" type="button">Uitloggen</button>
-      </div>
-      <p id="authMessage" class="message"></p>
     </section>
 
-    <main class="grid">
-      <section class="card" id="beheerCard">
-        <h2>Nieuwe race</h2>
-
-        <div class="field">
-          <label for="raceName">Race naam</label>
-          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1" />
+    <section class="landing-card info-card">
+      <h2>Wat kun je hier doen?</h2>
+      <div class="info-grid">
+        <div class="info-box">
+          <h3>Live overzicht</h3>
+          <p>Iedereen kan de seizoensstand, racegeschiedenis en sprintresultaten bekijken.</p>
         </div>
-
-        <div class="field">
-          <label for="raceDate">Datum</label>
-          <input id="raceDate" type="date" />
+        <div class="info-box">
+          <h3>Beveiligd beheer</h3>
+          <p>Alleen beheerders met de juiste inloggegevens kunnen data toevoegen of wijzigen.</p>
         </div>
-
-        <div class="sprint-card">
-          <div class="section-row">
-            <h3>Sprint 1 (10 min)</h3>
-            <button id="addSprint1DriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
-          </div>
-          <div id="sprint1DriversList" class="drivers-list"></div>
+        <div class="info-box">
+          <h3>2 sprint races</h3>
+          <p>Elke race bestaat uit 2 sprint races van 10 minuten met automatische puntentelling.</p>
         </div>
-
-        <div class="sprint-card">
-          <div class="section-row">
-            <h3>Sprint 2 (10 min)</h3>
-            <button id="addSprint2DriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
-          </div>
-          <div id="sprint2DriversList" class="drivers-list"></div>
-        </div>
-
-        <div class="actions">
-          <button id="saveRaceBtn" type="button">Race opslaan</button>
-          <button id="resetFormBtn" class="secondary" type="button">Leegmaken</button>
-          <button id="exportBtn" class="secondary" type="button">Export JSON</button>
-        </div>
-
-        <p id="message" class="message"></p>
-      </section>
-
-      <section class="card">
-        <div class="section-row">
-          <h2>🏆 Seizoensstand</h2>
-          <button id="clearAllBtn" class="danger" type="button">Alles wissen</button>
-        </div>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Driver</th>
-                <th>Punten</th>
-                <th>Races</th>
-                <th>Beste sprint</th>
-              </tr>
-            </thead>
-            <tbody id="seasonBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card full">
-        <h2>📋 Race overzicht</h2>
-        <div class="table-wrap">
-          <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Driver</th>
-                <th>Race</th>
-                <th>Sprint 1</th>
-                <th>Sprint 2</th>
-                <th>Totaal punten</th>
-              </tr>
-            </thead>
-            <tbody id="leaderboardBody"></tbody>
-          </table>
-        </div>
-      </section>
-
-      <section class="card full">
-        <h2>🗂️ Race geschiedenis</h2>
-        <div id="historyList" class="history-list"></div>
-      </section>
-    </main>
+      </div>
+    </section>
   </div>
-
-  <script type="module" src="script.js"></script>
 </body>
 </html>

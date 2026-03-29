@@ -1,24 +1,28 @@
-# Kart Competitie Firebase met login
+# Kart Competitie met landing page + beheer login
 
-Deze versie gebruikt:
-- Firebase Realtime Database
-- Firebase Authentication (Email/Password)
+Deze versie heeft 3 pagina's:
 
-## Wat deze versie doet
-- iedereen kan de data bekijken
-- alleen ingelogde gebruikers kunnen races toevoegen, verwijderen of alles wissen
-- export JSON blijft beschikbaar
+- `index.html` → landing page
+- `public.html` → openbare leaderboard / kijkpagina
+- `login.html` → beheerder login
+- `admin.html` → beveiligd beheerpaneel na inloggen
 
-## Zet dit aan in Firebase
-### 1. Authentication
-Ga naar:
-Authentication > Sign-in method > Email/Password
-Zet Email/Password aan.
+## Werking
+1. Bezoekers komen eerst op de landing page.
+2. Via **Beheerder login** gaan ze naar de loginpagina.
+3. Na succesvol inloggen komen ze automatisch op het beheerpaneel.
+4. Niet-ingelogde gebruikers worden van `admin.html` teruggestuurd naar `login.html`.
 
-Maak daarna bij Authentication > Users een gebruiker aan.
+## Firebase
+Deze versie gebruikt jouw huidige Firebase Realtime Database + Authentication config.
 
-### 2. Realtime Database Rules
-Gebruik voor deze opzet:
+## Nog nodig in Firebase
+### Authentication
+- Email/Password aanzetten
+- beheerdergebruiker aanmaken
+
+### Realtime Database Rules
+Gebruik:
 
 ```json
 {
@@ -28,13 +32,3 @@ Gebruik voor deze opzet:
   }
 }
 ```
-
-## Database pad
-De app schrijft naar:
-`kartCompetitie/races`
-
-## Belangrijk
-Als login niet werkt:
-- check of Email/Password echt aanstaat
-- check of de gebruiker is aangemaakt
-- check of je site via hosting draait en niet als lokaal bestand

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Beheerder login</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body class="landing-body">
+  <div class="landing-shell narrow">
+    <section class="landing-card login-card">
+      <a class="back-link" href="index.html">← Terug naar home</a>
+      <p class="eyebrow">Beheerder</p>
+      <h1>Inloggen</h1>
+      <p class="sub">Voer je beheerdersgegevens in. Na succesvol inloggen ga je automatisch naar het beheerpaneel.</p>
+
+      <div class="field">
+        <label for="emailInput">E-mailadres</label>
+        <input id="emailInput" type="email" placeholder="beheer@voorbeeld.nl" />
+      </div>
+
+      <div class="field">
+        <label for="passwordInput">Wachtwoord</label>
+        <input id="passwordInput" type="password" placeholder="Wachtwoord" />
+      </div>
+
+      <div class="landing-actions left">
+        <button id="loginBtn" class="btn btn-primary" type="button">Inloggen</button>
+        <a class="btn btn-secondary" href="public.html">Alleen bekijken</a>
+      </div>
+
+      <p id="loginMessage" class="message"></p>
+    </section>
+  </div>
+
+  <script type="module" src="login.js"></script>
+</body>
+</html>
