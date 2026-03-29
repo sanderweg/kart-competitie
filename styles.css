@@ -67,10 +67,7 @@ input[type="date"] {
   outline: none;
 }
 
-input[disabled] {
-  opacity: .75;
-}
-
+input[disabled] { opacity: .75; }
 input[type="file"] { display: none; }
 
 button,
@@ -119,28 +116,6 @@ button:hover, .file-label:hover {
 .remove-driver {
   background: #3c2530;
   color: #ffd7de;
-}
-
-.points-card {
-  background: var(--panel-2);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 14px;
-  margin: 6px 0 18px;
-}
-
-.points-overview {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-  gap: 8px;
-}
-
-.points-chip {
-  background: rgba(255,255,255,0.03);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 10px;
-  font-size: 14px;
 }
 
 .message {
