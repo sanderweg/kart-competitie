@@ -1,37 +1,85 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-<meta charset="UTF-8">
-<title>Kart Competitie</title>
-<link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kart Competitie Dashboard</title>
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
+  <div class="app">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Kart Competitie</p>
+        <h1>🏁 Racebeheer & Leaderboard</h1>
+        <p class="sub">Voeg races en drivers toe, bouw een geschiedenis op en houd automatisch een leaderboard bij.</p>
+      </div>
+    </header>
 
-<h1>🏁 Kart Competitie Dashboard</h1>
+    <main class="grid">
+      <section class="card">
+        <h2>Nieuwe race</h2>
+        <div class="field">
+          <label for="raceName">Race naam</label>
+          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1" />
+        </div>
 
-<section>
-<h2>Nieuwe Race Toevoegen</h2>
-<input id="raceName" placeholder="Race naam">
-<textarea id="raceData" placeholder="Naam,Punten per regel"></textarea>
-<button onclick="addRace()">Race Opslaan</button>
-</section>
+        <div class="field">
+          <label for="raceDate">Datum</label>
+          <input id="raceDate" type="date" />
+        </div>
 
-<section>
-<h2>🏆 Leaderboard</h2>
-<ul id="leaderboard"></ul>
-</section>
+        <div class="drivers-header">
+          <h3>Drivers</h3>
+          <button id="addDriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
+        </div>
 
-<section>
-<h2>📜 Race Geschiedenis</h2>
-<ul id="history"></ul>
-</section>
+        <div id="driversList" class="drivers-list"></div>
 
-<section>
-<h2>💾 Data</h2>
-<button onclick="exportData()">Export JSON</button>
-<input type="file" onchange="importData(event)">
-</section>
+        <div class="actions">
+          <button id="saveRaceBtn" type="button">Race opslaan</button>
+          <button id="resetFormBtn" class="secondary" type="button">Leegmaken</button>
+        </div>
 
-<script src="script.js"></script>
+        <p id="message" class="message"></p>
+      </section>
+
+      <section class="card">
+        <div class="section-header">
+          <h2>🏆 Leaderboard</h2>
+          <button id="clearAllBtn" class="danger" type="button">Alles wissen</button>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Driver</th>
+                <th>Punten</th>
+                <th>Races</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboardBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card full">
+        <div class="section-header">
+          <h2>📜 Race geschiedenis</h2>
+          <div class="inline-actions">
+            <button id="exportBtn" class="secondary" type="button">Export JSON</button>
+            <label class="file-label">
+              Import JSON
+              <input id="importInput" type="file" accept="application/json" />
+            </label>
+          </div>
+        </div>
+        <div id="historyList" class="history-list"></div>
+      </section>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
