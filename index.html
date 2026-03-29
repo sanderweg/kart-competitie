@@ -1,37 +1,33 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kart Competitie Dashboard</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Kart Competitie</title>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app">
     <header class="hero">
-      <div>
-        <p class="eyebrow">Kart Competitie</p>
-        <h1>🏁 Racebeheer & Leaderboard</h1>
-        <p class="sub">Voeg races en drivers toe, vul posities in en laat de leaderboard automatisch punten berekenen.</p>
-      </div>
+      <p class="eyebrow">Kart Competitie</p>
+      <h1>🏁 Racebeheer & Leaderboard</h1>
+      <p class="sub">Voer per driver een positie in. De punten worden automatisch berekend.</p>
     </header>
 
     <main class="grid">
       <section class="card">
         <h2>Nieuwe race</h2>
-
         <div class="field">
           <label for="raceName">Race naam</label>
-          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1" />
+          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1">
         </div>
-
         <div class="field">
           <label for="raceDate">Datum</label>
-          <input id="raceDate" type="date" />
+          <input id="raceDate" type="date">
         </div>
 
-        <div class="drivers-header">
-          <h3>Drivers & posities</h3>
+        <div class="section-row">
+          <h3>Drivers</h3>
           <button id="addDriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
         </div>
 
@@ -46,7 +42,7 @@
       </section>
 
       <section class="card">
-        <div class="section-header">
+        <div class="section-row">
           <h2>🏆 Leaderboard</h2>
           <button id="clearAllBtn" class="danger" type="button">Alles wissen</button>
         </div>
@@ -67,13 +63,12 @@
       </section>
 
       <section class="card full">
-        <div class="section-header">
+        <div class="section-row">
           <h2>📜 Race geschiedenis</h2>
           <div class="inline-actions">
             <button id="exportBtn" class="secondary" type="button">Export JSON</button>
-            <label class="file-label">
-              Import JSON
-              <input id="importInput" type="file" accept="application/json" />
+            <label class="file-label">Import JSON
+              <input id="importInput" type="file" accept="application/json">
             </label>
           </div>
         </div>
@@ -81,7 +76,6 @@
       </section>
     </main>
   </div>
-
   <script src="script.js"></script>
 </body>
 </html>
