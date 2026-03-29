@@ -1,0 +1,1 @@
+console.log('Kart site loaded');
