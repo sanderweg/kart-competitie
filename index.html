@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Kart Competitie Firebase</title>
+  <title>Kart Competitie Firebase Auth</title>
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
@@ -12,13 +12,37 @@
       <div>
         <p class="eyebrow">Kart Competitie</p>
         <h1>🏁 Racebeheer & Live Leaderboard</h1>
-        <p class="sub">1 race bestaat uit 2 sprint races van 10 minuten. Data wordt live gedeeld via Firebase Realtime Database.</p>
+        <p class="sub">Iedereen kan kijken. Alleen ingelogde gebruikers mogen gegevens wijzigen.</p>
       </div>
-      <div id="connectionStatus" class="status">🟡 Verbinden...</div>
+      <div class="hero-right">
+        <div id="connectionStatus" class="status">🟡 Verbinden...</div>
+        <div id="authStatus" class="status secondary-status">🔒 Niet ingelogd</div>
+      </div>
     </header>
 
+    <section class="card auth-card">
+      <div class="section-row">
+        <h2>Beheer login</h2>
+      </div>
+      <div class="auth-grid">
+        <div class="field">
+          <label for="emailInput">E-mailadres</label>
+          <input id="emailInput" type="email" placeholder="beheer@voorbeeld.nl" />
+        </div>
+        <div class="field">
+          <label for="passwordInput">Wachtwoord</label>
+          <input id="passwordInput" type="password" placeholder="Wachtwoord" />
+        </div>
+      </div>
+      <div class="actions">
+        <button id="loginBtn" type="button">Inloggen</button>
+        <button id="logoutBtn" class="secondary" type="button">Uitloggen</button>
+      </div>
+      <p id="authMessage" class="message"></p>
+    </section>
+
     <main class="grid">
-      <section class="card">
+      <section class="card" id="beheerCard">
         <h2>Nieuwe race</h2>
 
         <div class="field">

@@ -1,22 +1,30 @@
-# Kart Competitie Firebase - Gerepareerde versie
+# Kart Competitie Firebase met login
 
-Dit pakket bevat:
-- volledige layout
-- 2 sprint races per race
-- live Firebase Realtime Database koppeling
-- export JSON
-- live seizoensstand
-- race-overzicht
-- racegeschiedenis
+Deze versie gebruikt:
+- Firebase Realtime Database
+- Firebase Authentication (Email/Password)
 
-## Belangrijk
-Zorg dat je Realtime Database Rules tijdens testen ten minste dit toestaan:
+## Wat deze versie doet
+- iedereen kan de data bekijken
+- alleen ingelogde gebruikers kunnen races toevoegen, verwijderen of alles wissen
+- export JSON blijft beschikbaar
+
+## Zet dit aan in Firebase
+### 1. Authentication
+Ga naar:
+Authentication > Sign-in method > Email/Password
+Zet Email/Password aan.
+
+Maak daarna bij Authentication > Users een gebruiker aan.
+
+### 2. Realtime Database Rules
+Gebruik voor deze opzet:
 
 ```json
 {
   "rules": {
     ".read": true,
-    ".write": true
+    ".write": "auth != null"
   }
 }
 ```
@@ -25,6 +33,8 @@ Zorg dat je Realtime Database Rules tijdens testen ten minste dit toestaan:
 De app schrijft naar:
 `kartCompetitie/races`
 
-## Hosting
-Gebruik GitHub Pages, Netlify, Firebase Hosting of een andere webhost.
-Open dit niet als los bestand vanaf je computer.
+## Belangrijk
+Als login niet werkt:
+- check of Email/Password echt aanstaat
+- check of de gebruiker is aangemaakt
+- check of je site via hosting draait en niet als lokaal bestand

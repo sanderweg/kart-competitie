@@ -7,6 +7,12 @@ import {
   remove,
   onValue
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
+import {
+  getAuth,
+  signInWithEmailAndPassword,
+  signOut,
+  onAuthStateChanged
+} from "https://www.gstatic.com/firebasejs/11.10.0/firebase-auth.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAHJ_U7_H7rO1CLDEmgYm2bY-956R2B3jI",
@@ -23,29 +29,52 @@ const POINTS_MAP = {1:25,2:22,3:20,4:19,5:18,6:17,7:16,8:15,9:14,10:13,11:12,12:
 
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
+const auth = getAuth(app);
 
 const raceNameInput = document.getElementById("raceName");
 const raceDateInput = document.getElementById("raceDate");
 const sprint1DriversList = document.getElementById("sprint1DriversList");
 const sprint2DriversList = document.getElementById("sprint2DriversList");
 const messageEl = document.getElementById("message");
+const authMessageEl = document.getElementById("authMessage");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const seasonBody = document.getElementById("seasonBody");
 const historyList = document.getElementById("historyList");
 const connectionStatus = document.getElementById("connectionStatus");
+const authStatus = document.getElementById("authStatus");
+const beheerCard = document.getElementById("beheerCard");
+const emailInput = document.getElementById("emailInput");
+const passwordInput = document.getElementById("passwordInput");
+
+const loginBtn = document.getElementById("loginBtn");
+const logoutBtn = document.getElementById("logoutBtn");
+const addSprint1DriverBtn = document.getElementById("addSprint1DriverBtn");
+const addSprint2DriverBtn = document.getElementById("addSprint2DriverBtn");
+const saveRaceBtn = document.getElementById("saveRaceBtn");
+const resetFormBtn = document.getElementById("resetFormBtn");
+const exportBtn = document.getElementById("exportBtn");
+const clearAllBtn = document.getElementById("clearAllBtn");
 
 let races = [];
+let currentUser = null;
 
-document.getElementById("addSprint1DriverBtn").addEventListener("click", () => addDriverRow(sprint1DriversList));
-document.getElementById("addSprint2DriverBtn").addEventListener("click", () => addDriverRow(sprint2DriversList));
-document.getElementById("saveRaceBtn").addEventListener("click", saveRace);
-document.getElementById("resetFormBtn").addEventListener("click", () => resetForm(true));
-document.getElementById("exportBtn").addEventListener("click", exportData);
-document.getElementById("clearAllBtn").addEventListener("click", clearAllData);
+addSprint1DriverBtn.addEventListener("click", () => addDriverRow(sprint1DriversList));
+addSprint2DriverBtn.addEventListener("click", () => addDriverRow(sprint2DriversList));
+saveRaceBtn.addEventListener("click", saveRace);
+resetFormBtn.addEventListener("click", () => resetForm(true));
+exportBtn.addEventListener("click", exportData);
+clearAllBtn.addEventListener("click", clearAllData);
+loginBtn.addEventListener("click", login);
+logoutBtn.addEventListener("click", logout);
 
 function setMessage(text, type = "") {
   messageEl.textContent = text || "";
   messageEl.className = type ? "message " + type : "message";
+}
+
+function setAuthMessage(text, type = "") {
+  authMessageEl.textContent = text || "";
+  authMessageEl.className = type ? "message " + type : "message";
 }
 
 function escapeHtml(value) {
@@ -64,6 +93,38 @@ function formatDate(dateString) {
 
 function getPoints(position) {
   return POINTS_MAP[position] || 0;
+}
+
+function updateAuthUi() {
+  const loggedIn = !!currentUser;
+
+  authStatus.textContent = loggedIn
+    ? `🔓 Ingelogd als ${currentUser.email}`
+    : "🔒 Niet ingelogd";
+
+  raceNameInput.disabled = !loggedIn;
+  raceDateInput.disabled = !loggedIn;
+  emailInput.disabled = loggedIn;
+  passwordInput.disabled = loggedIn;
+
+  addSprint1DriverBtn.disabled = !loggedIn;
+  addSprint2DriverBtn.disabled = !loggedIn;
+  saveRaceBtn.disabled = !loggedIn;
+  resetFormBtn.disabled = !loggedIn;
+  clearAllBtn.disabled = !loggedIn;
+  logoutBtn.disabled = !loggedIn;
+  loginBtn.disabled = loggedIn;
+
+  beheerCard.style.opacity = loggedIn ? "1" : "0.8";
+  if (!loggedIn) {
+    setMessage("Log in om races te kunnen toevoegen of verwijderen.", "");
+  } else {
+    setMessage("Je bent ingelogd en kunt gegevens wijzigen.", "success");
+  }
+
+  document.querySelectorAll(".driver-name, .driver-position, .remove-driver").forEach(el => {
+    el.disabled = !loggedIn;
+  });
 }
 
 function addDriverRow(targetList, name = "", position = "") {
@@ -87,6 +148,7 @@ function addDriverRow(targetList, name = "", position = "") {
 
   const positionInput = row.querySelector(".driver-position");
   const pointsInput = row.querySelector(".driver-points-preview");
+  const removeBtn = row.querySelector(".remove-driver");
 
   const updatePreview = () => {
     const pos = Number(positionInput.value);
@@ -94,13 +156,16 @@ function addDriverRow(targetList, name = "", position = "") {
   };
 
   positionInput.addEventListener("input", updatePreview);
-  row.querySelector(".remove-driver").addEventListener("click", () => {
+  removeBtn.addEventListener("click", () => {
+    if (!currentUser) return;
     row.remove();
     if (!targetList.children.length) addDriverRow(targetList);
+    updateAuthUi();
   });
 
   updatePreview();
   targetList.appendChild(row);
+  updateAuthUi();
 }
 
 function getDriversFromList(targetList) {
@@ -161,7 +226,41 @@ function mergeResults(sprint1Drivers, sprint2Drivers) {
   return Object.values(totals);
 }
 
+async function login() {
+  try {
+    const email = emailInput.value.trim();
+    const password = passwordInput.value;
+
+    if (!email || !password) {
+      setAuthMessage("Vul e-mailadres en wachtwoord in.", "error");
+      return;
+    }
+
+    await signInWithEmailAndPassword(auth, email, password);
+    passwordInput.value = "";
+    setAuthMessage("Succesvol ingelogd.", "success");
+  } catch (error) {
+    console.error(error);
+    setAuthMessage("Inloggen mislukt. Controleer je gegevens of of Email/Password in Firebase aanstaat.", "error");
+  }
+}
+
+async function logout() {
+  try {
+    await signOut(auth);
+    setAuthMessage("Uitgelogd.", "success");
+  } catch (error) {
+    console.error(error);
+    setAuthMessage("Uitloggen mislukt.", "error");
+  }
+}
+
 async function saveRace() {
+  if (!currentUser) {
+    setMessage("Je moet ingelogd zijn om races op te slaan.", "error");
+    return;
+  }
+
   try {
     const raceName = raceNameInput.value.trim();
     const raceDate = raceDateInput.value;
@@ -187,14 +286,15 @@ async function saveRace() {
       sprint1Drivers,
       sprint2Drivers,
       results,
-      createdAt: Date.now()
+      createdAt: Date.now(),
+      createdBy: currentUser.email || currentUser.uid
     });
 
     resetForm(false);
     setMessage("Race succesvol opgeslagen.", "success");
   } catch (error) {
     console.error(error);
-    setMessage("Opslaan mislukt. Controleer je database-rules of Firebase-instellingen.", "error");
+    setMessage("Opslaan mislukt. Check je Auth en Database rules.", "error");
   }
 }
 
@@ -256,8 +356,7 @@ function renderRaceTable() {
         race: race.name,
         sprint1: result.sprint1Position,
         sprint2: result.sprint2Position,
-        totalPoints: result.totalPoints || 0,
-        date: race.date
+        totalPoints: result.totalPoints || 0
       });
     });
   });
@@ -302,6 +401,10 @@ function renderHistory() {
       .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
       .join("");
 
+    const deleteButton = currentUser
+      ? `<button type="button" class="danger delete-race-btn" data-id="${race.id}">Race verwijderen</button>`
+      : "";
+
     return `
       <article class="race-item">
         <div class="race-top">
@@ -309,7 +412,7 @@ function renderHistory() {
             <h3>${escapeHtml(race.name)}</h3>
             <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten</div>
           </div>
-          <button type="button" class="danger delete-race-btn" data-id="${race.id}">Race verwijderen</button>
+          ${deleteButton}
         </div>
         <div class="split-columns">
           <div><h4>Sprint 1</h4><ol class="race-drivers">${sprint1Items}</ol></div>
@@ -321,26 +424,32 @@ function renderHistory() {
 
   document.querySelectorAll(".delete-race-btn").forEach(btn => {
     btn.addEventListener("click", async () => {
+      if (!currentUser) return;
       if (!confirm("Weet je zeker dat je deze race wilt verwijderen?")) return;
       try {
         await remove(ref(db, DB_PATH + "/" + btn.dataset.id));
         setMessage("Race verwijderd.", "success");
       } catch (error) {
         console.error(error);
-        setMessage("Verwijderen mislukt.", "error");
+        setMessage("Verwijderen mislukt. Check je rules.", "error");
       }
     });
   });
 }
 
 async function clearAllData() {
+  if (!currentUser) {
+    setMessage("Je moet ingelogd zijn om alles te wissen.", "error");
+    return;
+  }
+
   if (!confirm("Alles wissen? Alle races worden uit Firebase verwijderd.")) return;
   try {
     await remove(ref(db, DB_PATH));
     setMessage("Alle data is verwijderd.", "success");
   } catch (error) {
     console.error(error);
-    setMessage("Wissen mislukt.", "error");
+    setMessage("Wissen mislukt. Check je rules.", "error");
   }
 }
 
@@ -383,6 +492,13 @@ function monitorConnection() {
   });
 }
 
+onAuthStateChanged(auth, user => {
+  currentUser = user;
+  updateAuthUi();
+  renderHistory();
+});
+
 resetForm();
+updateAuthUi();
 subscribeToRaces();
 monitorConnection();
