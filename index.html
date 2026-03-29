@@ -1,17 +1,19 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Kart Competitie Firebase</title>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css" />
 </head>
 <body>
   <div class="app">
     <header class="hero">
-      <p class="eyebrow">Kart Competitie</p>
-      <h1>🏁 Racebeheer & Live Leaderboard</h1>
-      <p class="sub">Deze versie gebruikt Firebase Realtime Database zodat meerdere apparaten tegelijk dezelfde data zien.</p>
+      <div>
+        <p class="eyebrow">Kart Competitie</p>
+        <h1>🏁 Racebeheer & Live Leaderboard</h1>
+        <p class="sub">1 race bestaat uit 2 sprint races van 10 minuten. Data wordt live gedeeld via Firebase Realtime Database.</p>
+      </div>
       <div id="connectionStatus" class="status">🟡 Verbinden...</div>
     </header>
 
@@ -21,12 +23,12 @@
 
         <div class="field">
           <label for="raceName">Race naam</label>
-          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1">
+          <input id="raceName" type="text" placeholder="Bijv. Clubrace 1" />
         </div>
 
         <div class="field">
           <label for="raceDate">Datum</label>
-          <input id="raceDate" type="date">
+          <input id="raceDate" type="date" />
         </div>
 
         <div class="sprint-card">
@@ -48,6 +50,7 @@
         <div class="actions">
           <button id="saveRaceBtn" type="button">Race opslaan</button>
           <button id="resetFormBtn" class="secondary" type="button">Leegmaken</button>
+          <button id="exportBtn" class="secondary" type="button">Export JSON</button>
         </div>
 
         <p id="message" class="message"></p>
@@ -75,7 +78,7 @@
       </section>
 
       <section class="card full">
-        <h2>📜 Race overzicht</h2>
+        <h2>📋 Race overzicht</h2>
         <div class="table-wrap">
           <table>
             <thead>
@@ -100,7 +103,6 @@
     </main>
   </div>
 
-  <script type="module" src="config.js"></script>
   <script type="module" src="script.js"></script>
 </body>
 </html>

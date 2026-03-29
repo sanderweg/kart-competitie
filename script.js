@@ -1,4 +1,3 @@
-import { firebaseConfig } from "./config.js";
 import { initializeApp } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-app.js";
 import {
   getDatabase,
@@ -6,14 +5,24 @@ import {
   push,
   set,
   remove,
-  onValue,
-  onDisconnect
+  onValue
 } from "https://www.gstatic.com/firebasejs/11.10.0/firebase-database.js";
 
+const firebaseConfig = {
+  apiKey: "AIzaSyAHJ_U7_H7rO1CLDEmgYm2bY-956R2B3jI",
+  authDomain: "karting-competitie.firebaseapp.com",
+  databaseURL: "https://karting-competitie-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "karting-competitie",
+  storageBucket: "karting-competitie.firebasestorage.app",
+  messagingSenderId: "915335846004",
+  appId: "1:915335846004:web:5fbc6592f60a93a9031921"
+};
+
+const DB_PATH = "kartCompetitie/races";
 const POINTS_MAP = {1:25,2:22,3:20,4:19,5:18,6:17,7:16,8:15,9:14,10:13,11:12,12:11,13:10,14:9,15:8,16:7,17:6,18:5,19:4,20:3,21:2,22:1};
 
 const app = initializeApp(firebaseConfig);
-const db = getDatabase(app, firebaseConfig.databaseURL);
+const db = getDatabase(app);
 
 const raceNameInput = document.getElementById("raceName");
 const raceDateInput = document.getElementById("raceDate");
@@ -27,21 +36,25 @@ const connectionStatus = document.getElementById("connectionStatus");
 
 let races = [];
 
-document.getElementById("addSprint1DriverBtn").addEventListener("click", () => addDriverRow(sprint1DriversList, "", ""));
-document.getElementById("addSprint2DriverBtn").addEventListener("click", () => addDriverRow(sprint2DriversList, "", ""));
+document.getElementById("addSprint1DriverBtn").addEventListener("click", () => addDriverRow(sprint1DriversList));
+document.getElementById("addSprint2DriverBtn").addEventListener("click", () => addDriverRow(sprint2DriversList));
 document.getElementById("saveRaceBtn").addEventListener("click", saveRace);
 document.getElementById("resetFormBtn").addEventListener("click", () => resetForm(true));
+document.getElementById("exportBtn").addEventListener("click", exportData);
 document.getElementById("clearAllBtn").addEventListener("click", clearAllData);
 
 function setMessage(text, type = "") {
-  messageEl.textContent = text;
+  messageEl.textContent = text || "";
   messageEl.className = type ? "message " + type : "message";
 }
 
 function escapeHtml(value) {
   return String(value)
-    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;").replace(/'/g, "&#039;");
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
 }
 
 function formatDate(dateString) {
@@ -53,28 +66,24 @@ function getPoints(position) {
   return POINTS_MAP[position] || 0;
 }
 
-function makeDriverRowHtml(name = "", position = "") {
-  return `
-    <div class="field">
-      <label>Driver naam</label>
-      <input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}">
-    </div>
-    <div class="field">
-      <label>Positie</label>
-      <input type="number" class="driver-position" min="1" max="22" placeholder="Bijv. 1" value="${position}">
-    </div>
-    <div class="field">
-      <label>Punten</label>
-      <input type="number" class="driver-points-preview" disabled>
-    </div>
-    <button type="button" class="remove-driver">Verwijderen</button>
-  `;
-}
-
 function addDriverRow(targetList, name = "", position = "") {
   const row = document.createElement("div");
   row.className = "driver-row";
-  row.innerHTML = makeDriverRowHtml(name, position);
+  row.innerHTML = `
+    <div class="field">
+      <label>Driver naam</label>
+      <input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}" />
+    </div>
+    <div class="field">
+      <label>Positie</label>
+      <input type="number" class="driver-position" min="1" max="22" placeholder="Bijv. 1" value="${position}" />
+    </div>
+    <div class="field">
+      <label>Punten</label>
+      <input type="number" class="driver-points-preview" disabled />
+    </div>
+    <button type="button" class="remove-driver">Verwijderen</button>
+  `;
 
   const positionInput = row.querySelector(".driver-position");
   const pointsInput = row.querySelector(".driver-points-preview");
@@ -107,6 +116,7 @@ function getDriversFromList(targetList) {
 
 function validateSprint(drivers, label) {
   if (!drivers.length) return `${label} heeft nog geen drivers.`;
+
   const invalid = drivers.find(d => !d.name || Number.isNaN(d.position) || d.position < 1 || d.position > 22);
   if (invalid) return `${label} heeft een driver zonder geldige naam of positie (1 t/m 22).`;
 
@@ -128,7 +138,9 @@ function mergeResults(sprint1Drivers, sprint2Drivers) {
 
   sprint1Drivers.forEach(driver => {
     const key = driver.name.toLowerCase();
-    if (!totals[key]) totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
+    if (!totals[key]) {
+      totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
+    }
     totals[key].driver = driver.name;
     totals[key].sprint1Position = driver.position;
     totals[key].totalPoints += driver.points;
@@ -137,7 +149,9 @@ function mergeResults(sprint1Drivers, sprint2Drivers) {
 
   sprint2Drivers.forEach(driver => {
     const key = driver.name.toLowerCase();
-    if (!totals[key]) totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
+    if (!totals[key]) {
+      totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
+    }
     totals[key].driver = driver.name;
     totals[key].sprint2Position = driver.position;
     totals[key].totalPoints += driver.points;
@@ -164,7 +178,7 @@ async function saveRace() {
     if (sprint2Error) return setMessage(sprint2Error, "error");
 
     const results = mergeResults(sprint1Drivers, sprint2Drivers);
-    const raceRef = push(ref(db, "kartCompetitie/races"));
+    const raceRef = push(ref(db, DB_PATH));
 
     await set(raceRef, {
       id: raceRef.key,
@@ -177,10 +191,10 @@ async function saveRace() {
     });
 
     resetForm(false);
-    setMessage("Race succesvol opgeslagen in Firebase.", "success");
+    setMessage("Race succesvol opgeslagen.", "success");
   } catch (error) {
     console.error(error);
-    setMessage("Opslaan mislukt. Controleer je Firebase config en rules.", "error");
+    setMessage("Opslaan mislukt. Controleer je database-rules of Firebase-instellingen.", "error");
   }
 }
 
@@ -202,7 +216,9 @@ function renderSeasonStand() {
   races.forEach(race => {
     (race.results || []).forEach(result => {
       const key = result.driver.toLowerCase();
-      if (!totals[key]) totals[key] = { driver: result.driver, points: 0, races: 0, bestSprint: 999 };
+      if (!totals[key]) {
+        totals[key] = { driver: result.driver, points: 0, races: 0, bestSprint: 999 };
+      }
       totals[key].driver = result.driver;
       totals[key].points += Number(result.totalPoints || 0);
       totals[key].races += 1;
@@ -232,6 +248,7 @@ function renderSeasonStand() {
 
 function renderRaceTable() {
   const rows = [];
+
   races.forEach(race => {
     (race.results || []).forEach(result => {
       rows.push({
@@ -239,13 +256,15 @@ function renderRaceTable() {
         race: race.name,
         sprint1: result.sprint1Position,
         sprint2: result.sprint2Position,
-        totalPoints: result.totalPoints,
+        totalPoints: result.totalPoints || 0,
         date: race.date
       });
     });
   });
 
-  rows.sort((a, b) => b.totalPoints - a.totalPoints || a.driver.localeCompare(b.driver, "nl"));
+  rows.sort((a, b) =>
+    b.totalPoints - a.totalPoints || a.driver.localeCompare(b.driver, "nl")
+  );
 
   if (!rows.length) {
     leaderboardBody.innerHTML = '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
@@ -271,11 +290,17 @@ function renderHistory() {
   }
 
   historyList.innerHTML = races.map(race => {
-    const sprint1Items = (race.sprint1Drivers || []).slice().sort((a, b) => a.position - b.position)
-      .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`).join("");
+    const sprint1Items = (race.sprint1Drivers || [])
+      .slice()
+      .sort((a, b) => Number(a.position) - Number(b.position))
+      .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
+      .join("");
 
-    const sprint2Items = (race.sprint2Drivers || []).slice().sort((a, b) => a.position - b.position)
-      .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`).join("");
+    const sprint2Items = (race.sprint2Drivers || [])
+      .slice()
+      .sort((a, b) => Number(a.position) - Number(b.position))
+      .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
+      .join("");
 
     return `
       <article class="race-item">
@@ -284,7 +309,7 @@ function renderHistory() {
             <h3>${escapeHtml(race.name)}</h3>
             <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten</div>
           </div>
-          <button class="danger delete-race-btn" data-id="${race.id}">Race verwijderen</button>
+          <button type="button" class="danger delete-race-btn" data-id="${race.id}">Race verwijderen</button>
         </div>
         <div class="split-columns">
           <div><h4>Sprint 1</h4><ol class="race-drivers">${sprint1Items}</ol></div>
@@ -298,7 +323,7 @@ function renderHistory() {
     btn.addEventListener("click", async () => {
       if (!confirm("Weet je zeker dat je deze race wilt verwijderen?")) return;
       try {
-        await remove(ref(db, "kartCompetitie/races/" + btn.dataset.id));
+        await remove(ref(db, DB_PATH + "/" + btn.dataset.id));
         setMessage("Race verwijderd.", "success");
       } catch (error) {
         console.error(error);
@@ -309,9 +334,9 @@ function renderHistory() {
 }
 
 async function clearAllData() {
-  if (!confirm("Alles wissen? Alle races in Firebase worden verwijderd.")) return;
+  if (!confirm("Alles wissen? Alle races worden uit Firebase verwijderd.")) return;
   try {
-    await remove(ref(db, "kartCompetitie/races"));
+    await remove(ref(db, DB_PATH));
     setMessage("Alle data is verwijderd.", "success");
   } catch (error) {
     console.error(error);
@@ -319,20 +344,42 @@ async function clearAllData() {
   }
 }
 
+function exportData() {
+  if (!races.length) {
+    setMessage("Geen data om te exporteren.", "error");
+    return;
+  }
+
+  const blob = new Blob([JSON.stringify(races, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "kart-competitie-backup.json";
+  a.click();
+  URL.revokeObjectURL(url);
+  setMessage("Export gestart.", "success");
+}
+
 function subscribeToRaces() {
-  onValue(ref(db, "kartCompetitie/races"), snapshot => {
+  onValue(ref(db, DB_PATH), snapshot => {
     const data = snapshot.val() || {};
     races = Object.values(data).sort((a, b) => new Date(b.date) - new Date(a.date));
     renderSeasonStand();
     renderRaceTable();
     renderHistory();
+  }, error => {
+    console.error(error);
+    setMessage("Lezen uit Firebase mislukt. Check je rules.", "error");
   });
 }
 
 function monitorConnection() {
   onValue(ref(db, ".info/connected"), snapshot => {
-    const connected = snapshot.val();
+    const connected = snapshot.val() === true;
     connectionStatus.textContent = connected ? "🟢 Live verbonden" : "🔴 Offline";
+  }, error => {
+    console.error(error);
+    connectionStatus.textContent = "🔴 Offline";
   });
 }
 
