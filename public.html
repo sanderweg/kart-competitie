@@ -20,52 +20,31 @@
         <a class="btn btn-secondary btn-inline" href="login.html">Beheerder login</a>
       </div>
     </header>
-
     <main class="grid">
       <section class="card">
         <h2>🏆 Seizoensstand</h2>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Driver</th>
-                <th>Punten</th>
-                <th>Races</th>
-                <th>Beste sprint</th>
-              </tr>
-            </thead>
+            <thead><tr><th>#</th><th>Driver</th><th>Punten</th><th>Races</th><th>Beste sprint</th></tr></thead>
             <tbody id="seasonBody"></tbody>
           </table>
         </div>
       </section>
-
       <section class="card">
         <h2>📋 Race overzicht</h2>
         <div class="table-wrap">
           <table>
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Driver</th>
-                <th>Race</th>
-                <th>Sprint 1</th>
-                <th>Sprint 2</th>
-                <th>Totaal punten</th>
-              </tr>
-            </thead>
+            <thead><tr><th>#</th><th>Driver</th><th>Race</th><th>Sprint 1</th><th>Sprint 2</th><th>Totaal punten</th></tr></thead>
             <tbody id="leaderboardBody"></tbody>
           </table>
         </div>
       </section>
-
       <section class="card full">
         <h2>🗂️ Race geschiedenis</h2>
         <div id="historyList" class="history-list"></div>
       </section>
     </main>
   </div>
-
   <script type="module" src="public.js"></script>
 </body>
 </html>

@@ -10,7 +10,9 @@ const seasonBody = document.getElementById("seasonBody");
 const historyList = document.getElementById("historyList");
 const connectionStatus = document.getElementById("connectionStatus");
 const authStatus = document.getElementById("authStatus");
-
+const formTitle = document.getElementById("formTitle");
+const editBadge = document.getElementById("editBadge");
+const cancelEditBtn = document.getElementById("cancelEditBtn");
 const logoutBtn = document.getElementById("logoutBtn");
 const addSprint1DriverBtn = document.getElementById("addSprint1DriverBtn");
 const addSprint2DriverBtn = document.getElementById("addSprint2DriverBtn");
@@ -21,13 +23,16 @@ const clearAllBtn = document.getElementById("clearAllBtn");
 
 let races = [];
 let currentUser = null;
+let editingRaceId = null;
 
-function setMessage(text, type = "") {
-  messageEl.textContent = text || "";
-  messageEl.className = type ? "message " + type : "message";
-}
-function updateAuthUi() {
-  authStatus.textContent = currentUser ? `🔓 Ingelogd als ${currentUser.email}` : "🔒 Niet ingelogd";
+function setMessage(text, type = "") { messageEl.textContent = text || ""; messageEl.className = type ? "message " + type : "message"; }
+function updateAuthUi() { authStatus.textContent = currentUser ? `🔓 Ingelogd als ${currentUser.email}` : "🔒 Niet ingelogd"; }
+function updateEditUi() {
+  const editing = !!editingRaceId;
+  formTitle.textContent = editing ? "Uitslag bewerken" : "Nieuwe race";
+  editBadge.classList.toggle("hidden", !editing);
+  cancelEditBtn.classList.toggle("hidden", !editing);
+  saveRaceBtn.textContent = editing ? "Wijzigingen opslaan" : "Race opslaan";
 }
 function addDriverRow(targetList, name = "", position = "") {
   const row = document.createElement("div");
@@ -36,19 +41,12 @@ function addDriverRow(targetList, name = "", position = "") {
     <div class="field"><label>Driver naam</label><input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}" /></div>
     <div class="field"><label>Positie</label><input type="number" class="driver-position" min="1" max="22" placeholder="Bijv. 1" value="${position}" /></div>
     <div class="field"><label>Punten</label><input type="number" class="driver-points-preview" disabled /></div>
-    <button type="button" class="remove-driver">Verwijderen</button>
-  `;
+    <button type="button" class="remove-driver">Verwijderen</button>`;
   const positionInput = row.querySelector(".driver-position");
   const pointsInput = row.querySelector(".driver-points-preview");
-  const updatePreview = () => {
-    const pos = Number(positionInput.value);
-    pointsInput.value = positionInput.value ? getPoints(pos) : "";
-  };
+  const updatePreview = () => { const pos = Number(positionInput.value); pointsInput.value = positionInput.value ? getPoints(pos) : ""; };
   positionInput.addEventListener("input", updatePreview);
-  row.querySelector(".remove-driver").addEventListener("click", () => {
-    row.remove();
-    if (!targetList.children.length) addDriverRow(targetList);
-  });
+  row.querySelector(".remove-driver").addEventListener("click", () => { row.remove(); if (!targetList.children.length) addDriverRow(targetList); });
   updatePreview();
   targetList.appendChild(row);
 }
@@ -70,6 +68,20 @@ function validateSprint(drivers, label) {
   for (let i = 0; i < names.length; i++) if (names.indexOf(names[i]) !== i) return `${label}: dezelfde driver staat dubbel.`;
   return "";
 }
+function loadRaceIntoForm(race) {
+  editingRaceId = race.id;
+  raceNameInput.value = race.name || "";
+  raceDateInput.value = race.date || "";
+  sprint1DriversList.innerHTML = "";
+  sprint2DriversList.innerHTML = "";
+  (race.sprint1Drivers || []).forEach(driver => addDriverRow(sprint1DriversList, driver.name, driver.position));
+  (race.sprint2Drivers || []).forEach(driver => addDriverRow(sprint2DriversList, driver.name, driver.position));
+  if (!(race.sprint1Drivers || []).length) addDriverRow(sprint1DriversList);
+  if (!(race.sprint2Drivers || []).length) addDriverRow(sprint2DriversList);
+  updateEditUi();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+  setMessage(`Je bewerkt nu: ${race.name}`, "success");
+}
 async function saveRace() {
   if (!currentUser) return;
   try {
@@ -84,16 +96,18 @@ async function saveRace() {
     const sprint2Error = validateSprint(sprint2Drivers, "Sprint 2");
     if (sprint2Error) return setMessage(sprint2Error, "error");
     const results = mergeResults(sprint1Drivers, sprint2Drivers);
-    const raceRef = push(ref(db, DB_PATH));
-    await set(raceRef, { id: raceRef.key, name: raceName, date: raceDate, sprint1Drivers, sprint2Drivers, results, createdAt: Date.now(), createdBy: currentUser.email || currentUser.uid });
+    const raceId = editingRaceId || push(ref(db, DB_PATH)).key;
+    await set(ref(db, DB_PATH + "/" + raceId), { id: raceId, name: raceName, date: raceDate, sprint1Drivers, sprint2Drivers, results, createdAt: Date.now(), createdBy: currentUser.email || currentUser.uid });
+    const wasEditing = !!editingRaceId;
     resetForm(false);
-    setMessage("Race succesvol opgeslagen.", "success");
+    setMessage(wasEditing ? "Uitslag succesvol bijgewerkt." : "Race succesvol opgeslagen.", "success");
   } catch (error) {
     console.error(error);
     setMessage("Opslaan mislukt. Check je Auth en Database rules.", "error");
   }
 }
 function resetForm(clearMessage = true) {
+  editingRaceId = null;
   raceNameInput.value = "";
   raceDateInput.value = "";
   sprint1DriversList.innerHTML = "";
@@ -102,6 +116,7 @@ function resetForm(clearMessage = true) {
   addDriverRow(sprint1DriversList);
   addDriverRow(sprint2DriversList);
   addDriverRow(sprint2DriversList);
+  updateEditUi();
   if (clearMessage) setMessage("");
 }
 function renderSeasonStand() {
@@ -117,64 +132,44 @@ function renderSeasonStand() {
     });
   });
   const sorted = Object.values(totals).sort((a, b) => b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl"));
-  if (!sorted.length) {
-    seasonBody.innerHTML = '<tr><td colspan="5" class="empty">Nog geen data in de database.</td></tr>';
-    return;
-  }
-  seasonBody.innerHTML = sorted.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("");
+  seasonBody.innerHTML = sorted.length ? sorted.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="5" class="empty">Nog geen data in de database.</td></tr>';
 }
 function renderRaceTable() {
   const rows = [];
-  races.forEach(race => {
-    (race.results || []).forEach(result => {
-      rows.push({ driver: result.driver, race: race.name, sprint1: result.sprint1Position, sprint2: result.sprint2Position, totalPoints: result.totalPoints || 0 });
-    });
-  });
+  races.forEach(race => (race.results || []).forEach(result => rows.push({ driver: result.driver, race: race.name, sprint1: result.sprint1Position, sprint2: result.sprint2Position, totalPoints: result.totalPoints || 0 })));
   rows.sort((a, b) => b.totalPoints - a.totalPoints || a.driver.localeCompare(b.driver, "nl"));
-  if (!rows.length) {
-    leaderboardBody.innerHTML = '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
-    return;
-  }
-  leaderboardBody.innerHTML = rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${escapeHtml(row.race)}</td><td>${row.sprint1}</td><td>${row.sprint2}</td><td>${row.totalPoints}</td></tr>`).join("");
+  leaderboardBody.innerHTML = rows.length ? rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${escapeHtml(row.race)}</td><td>${row.sprint1}</td><td>${row.sprint2}</td><td>${row.totalPoints}</td></tr>`).join("") : '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
 }
 function renderHistory() {
-  if (!races.length) {
-    historyList.innerHTML = '<div class="empty">Nog geen racegeschiedenis beschikbaar.</div>';
-    return;
-  }
+  if (!races.length) return historyList.innerHTML = '<div class="empty">Nog geen racegeschiedenis beschikbaar.</div>';
   historyList.innerHTML = races.map(race => {
-    const sprint1Items = (race.sprint1Drivers || []).slice().sort((a, b) => Number(a.position) - Number(b.position)).map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`).join("");
-    const sprint2Items = (race.sprint2Drivers || []).slice().sort((a, b) => Number(a.position) - Number(b.position)).map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`).join("");
-    return `<article class="race-item"><div class="race-top"><div><h3>${escapeHtml(race.name)}</h3><div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten</div></div><button type="button" class="danger delete-race-btn" data-id="${race.id}">Race verwijderen</button></div><div class="split-columns"><div><h4>Sprint 1</h4><ol class="race-drivers">${sprint1Items}</ol></div><div><h4>Sprint 2</h4><ol class="race-drivers">${sprint2Items}</ol></div></div></article>`;
+    const s1 = (race.sprint1Drivers || []).slice().sort((a, b) => Number(a.position) - Number(b.position)).map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`).join("");
+    const s2 = (race.sprint2Drivers || []).slice().sort((a, b) => Number(a.position) - Number(b.position)).map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`).join("");
+    return `<article class="race-item"><div class="race-top"><div><h3>${escapeHtml(race.name)}</h3><div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten</div></div><div class="race-actions"><button type="button" class="secondary edit-race-btn" data-id="${race.id}">Uitslag bewerken</button><button type="button" class="danger delete-race-btn" data-id="${race.id}">Race verwijderen</button></div></div><div class="split-columns"><div><h4>Sprint 1</h4><ol class="race-drivers">${s1}</ol></div><div><h4>Sprint 2</h4><ol class="race-drivers">${s2}</ol></div></div></article>`;
   }).join("");
-  document.querySelectorAll(".delete-race-btn").forEach(btn => {
-    btn.addEventListener("click", async () => {
-      if (!confirm("Weet je zeker dat je deze race wilt verwijderen?")) return;
-      try {
-        await remove(ref(db, DB_PATH + "/" + btn.dataset.id));
-        setMessage("Race verwijderd.", "success");
-      } catch (error) {
-        console.error(error);
-        setMessage("Verwijderen mislukt. Check je rules.", "error");
-      }
-    });
-  });
+  document.querySelectorAll(".edit-race-btn").forEach(btn => btn.addEventListener("click", () => {
+    const race = races.find(r => r.id === btn.dataset.id);
+    if (race) loadRaceIntoForm(race);
+  }));
+  document.querySelectorAll(".delete-race-btn").forEach(btn => btn.addEventListener("click", async () => {
+    if (!confirm("Weet je zeker dat je deze race wilt verwijderen?")) return;
+    try {
+      await remove(ref(db, DB_PATH + "/" + btn.dataset.id));
+      if (editingRaceId === btn.dataset.id) resetForm(false);
+      setMessage("Race verwijderd.", "success");
+    } catch (error) {
+      console.error(error);
+      setMessage("Verwijderen mislukt. Check je rules.", "error");
+    }
+  }));
 }
 async function clearAllData() {
   if (!confirm("Alles wissen? Alle races worden verwijderd.")) return;
-  try {
-    await remove(ref(db, DB_PATH));
-    setMessage("Alle data is verwijderd.", "success");
-  } catch (error) {
-    console.error(error);
-    setMessage("Wissen mislukt.", "error");
-  }
+  try { await remove(ref(db, DB_PATH)); resetForm(false); setMessage("Alle data is verwijderd.", "success"); }
+  catch (error) { console.error(error); setMessage("Wissen mislukt.", "error"); }
 }
 function exportData() {
-  if (!races.length) {
-    setMessage("Geen data om te exporteren.", "error");
-    return;
-  }
+  if (!races.length) return setMessage("Geen data om te exporteren.", "error");
   const blob = new Blob([JSON.stringify(races, null, 2)], { type: "application/json" });
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
@@ -188,6 +183,7 @@ addSprint1DriverBtn.addEventListener("click", () => addDriverRow(sprint1DriversL
 addSprint2DriverBtn.addEventListener("click", () => addDriverRow(sprint2DriversList));
 saveRaceBtn.addEventListener("click", saveRace);
 resetFormBtn.addEventListener("click", () => resetForm(true));
+cancelEditBtn.addEventListener("click", () => resetForm(true));
 exportBtn.addEventListener("click", exportData);
 clearAllBtn.addEventListener("click", clearAllData);
 logoutBtn.addEventListener("click", async () => { await signOut(auth); window.location.href = "login.html"; });
@@ -199,11 +195,7 @@ onAuthStateChanged(auth, user => {
 onValue(ref(db, DB_PATH), snapshot => {
   const data = snapshot.val() || {};
   races = Object.values(data).sort((a, b) => new Date(b.date) - new Date(a.date));
-  renderSeasonStand();
-  renderRaceTable();
-  renderHistory();
+  renderSeasonStand(); renderRaceTable(); renderHistory();
 });
-onValue(ref(db, ".info/connected"), snapshot => {
-  connectionStatus.textContent = snapshot.val() === true ? "🟢 Live verbonden" : "🔴 Offline";
-});
+onValue(ref(db, ".info/connected"), snapshot => { connectionStatus.textContent = snapshot.val() === true ? "🟢 Live verbonden" : "🔴 Offline"; });
 resetForm();
