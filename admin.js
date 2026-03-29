@@ -60,7 +60,7 @@ function getDriversFromList(targetList) {
 }
 function validateSprint(drivers, label) {
   if (!drivers.length) return `${label} heeft nog geen drivers.`;
-  const invalid = drivers.find(d => !d.name || Number.isNaN(d.position) || d.position < 1 || d.position > 22);
+  const invalid = drivers.find(d => !d.name || Number.isNaN(d.position) || d.position < 0 || d.position > 22);
   if (invalid) return `${label} heeft een driver zonder geldige naam of positie (1 t/m 22).`;
   const positions = drivers.map(d => d.position);
   for (let i = 0; i < positions.length; i++) if (positions.indexOf(positions[i]) !== i) return `${label}: positie ${positions[i]} is dubbel ingevuld.`;
