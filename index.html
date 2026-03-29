@@ -3,15 +3,16 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Kart Competitie</title>
+  <title>Kart Competitie Firebase</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <div class="app">
     <header class="hero">
       <p class="eyebrow">Kart Competitie</p>
-      <h1>🏁 Racebeheer & Leaderboard</h1>
-      <p class="sub">Elke race bestaat uit 2 sprint races van 10 minuten. Vul per sprint de posities in. De punten worden automatisch berekend en samengevoegd.</p>
+      <h1>🏁 Racebeheer & Live Leaderboard</h1>
+      <p class="sub">Deze versie gebruikt Firebase Realtime Database zodat meerdere apparaten tegelijk dezelfde data zien.</p>
+      <div id="connectionStatus" class="status">🟡 Verbinden...</div>
     </header>
 
     <main class="grid">
@@ -54,9 +55,27 @@
 
       <section class="card">
         <div class="section-row">
-          <h2>🏆 Leaderboard</h2>
+          <h2>🏆 Seizoensstand</h2>
           <button id="clearAllBtn" class="danger" type="button">Alles wissen</button>
         </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Driver</th>
+                <th>Punten</th>
+                <th>Races</th>
+                <th>Beste sprint</th>
+              </tr>
+            </thead>
+            <tbody id="seasonBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card full">
+        <h2>📜 Race overzicht</h2>
         <div class="table-wrap">
           <table>
             <thead>
@@ -75,19 +94,13 @@
       </section>
 
       <section class="card full">
-        <div class="section-row">
-          <h2>📜 Race geschiedenis</h2>
-          <div class="inline-actions">
-            <button id="exportBtn" class="secondary" type="button">Export JSON</button>
-            <label class="file-label">Import JSON
-              <input id="importInput" type="file" accept="application/json">
-            </label>
-          </div>
-        </div>
+        <h2>🗂️ Race geschiedenis</h2>
         <div id="historyList" class="history-list"></div>
       </section>
     </main>
   </div>
-  <script src="script.js"></script>
+
+  <script type="module" src="config.js"></script>
+  <script type="module" src="script.js"></script>
 </body>
 </html>
