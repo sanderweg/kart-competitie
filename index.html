@@ -11,27 +11,38 @@
     <header class="hero">
       <p class="eyebrow">Kart Competitie</p>
       <h1>🏁 Racebeheer & Leaderboard</h1>
-      <p class="sub">Voer per driver een positie in. De punten worden automatisch berekend.</p>
+      <p class="sub">Elke race bestaat uit 2 sprint races van 10 minuten. Vul per sprint de posities in. De punten worden automatisch berekend en samengevoegd.</p>
     </header>
 
     <main class="grid">
       <section class="card">
         <h2>Nieuwe race</h2>
+
         <div class="field">
           <label for="raceName">Race naam</label>
           <input id="raceName" type="text" placeholder="Bijv. Clubrace 1">
         </div>
+
         <div class="field">
           <label for="raceDate">Datum</label>
           <input id="raceDate" type="date">
         </div>
 
-        <div class="section-row">
-          <h3>Drivers</h3>
-          <button id="addDriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
+        <div class="sprint-card">
+          <div class="section-row">
+            <h3>Sprint 1 (10 min)</h3>
+            <button id="addSprint1DriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
+          </div>
+          <div id="sprint1DriversList" class="drivers-list"></div>
         </div>
 
-        <div id="driversList" class="drivers-list"></div>
+        <div class="sprint-card">
+          <div class="section-row">
+            <h3>Sprint 2 (10 min)</h3>
+            <button id="addSprint2DriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
+          </div>
+          <div id="sprint2DriversList" class="drivers-list"></div>
+        </div>
 
         <div class="actions">
           <button id="saveRaceBtn" type="button">Race opslaan</button>
@@ -53,8 +64,9 @@
                 <th>#</th>
                 <th>Driver</th>
                 <th>Race</th>
-                <th>Positie</th>
-                <th>Punten</th>
+                <th>Sprint 1</th>
+                <th>Sprint 2</th>
+                <th>Totaal punten</th>
               </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
