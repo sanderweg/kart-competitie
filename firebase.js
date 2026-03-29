@@ -31,21 +31,11 @@ export const app = initializeApp(firebaseConfig);
 export const db = getDatabase(app);
 export const auth = getAuth(app);
 
-export {
-  ref,
-  push,
-  set,
-  remove,
-  onValue,
-  signInWithEmailAndPassword,
-  signOut,
-  onAuthStateChanged
-};
+export { ref, push, set, remove, onValue, signInWithEmailAndPassword, signOut, onAuthStateChanged };
 
 export function getPoints(position) {
   return POINTS_MAP[position] || 0;
 }
-
 export function escapeHtml(value) {
   return String(value)
     .replace(/&/g, "&amp;")
@@ -54,36 +44,27 @@ export function escapeHtml(value) {
     .replace(/"/g, "&quot;")
     .replace(/'/g, "&#039;");
 }
-
 export function formatDate(dateString) {
   if (!dateString) return "Geen datum";
   return new Date(dateString + "T00:00:00").toLocaleDateString("nl-NL");
 }
-
 export function mergeResults(sprint1Drivers, sprint2Drivers) {
   const totals = {};
-
   sprint1Drivers.forEach(driver => {
     const key = driver.name.toLowerCase();
-    if (!totals[key]) {
-      totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
-    }
+    if (!totals[key]) totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
     totals[key].driver = driver.name;
     totals[key].sprint1Position = driver.position;
     totals[key].totalPoints += driver.points;
     totals[key].bestSprint = Math.min(totals[key].bestSprint, driver.position);
   });
-
   sprint2Drivers.forEach(driver => {
     const key = driver.name.toLowerCase();
-    if (!totals[key]) {
-      totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
-    }
+    if (!totals[key]) totals[key] = { driver: driver.name, sprint1Position: "-", sprint2Position: "-", totalPoints: 0, bestSprint: 999 };
     totals[key].driver = driver.name;
     totals[key].sprint2Position = driver.position;
     totals[key].totalPoints += driver.points;
     totals[key].bestSprint = Math.min(totals[key].bestSprint, driver.position);
   });
-
   return Object.values(totals);
 }

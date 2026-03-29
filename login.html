@@ -7,29 +7,69 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="landing-body">
+  <div class="landing-bg"></div>
   <div class="landing-shell narrow">
-    <section class="landing-card login-card">
-      <a class="back-link" href="index.html">← Terug naar home</a>
-      <p class="eyebrow">Beheerder</p>
-      <h1>Inloggen</h1>
-      <p class="sub">Voer je beheerdersgegevens in. Na succesvol inloggen ga je automatisch naar het beheerpaneel.</p>
+    <section class="login-panel">
+      <div class="login-left">
+        <a class="back-link" href="index.html">← Terug naar home</a>
+        <p class="eyebrow">Beheerder</p>
+        <h1>Inloggen op het beheerpaneel</h1>
+        <p class="sub large-sub">
+          Gebruik je beheerdersaccount om races toe te voegen, resultaten aan te passen
+          en exports te maken van de competitie.
+        </p>
 
-      <div class="field">
-        <label for="emailInput">E-mailadres</label>
-        <input id="emailInput" type="email" placeholder="beheer@voorbeeld.nl" />
+        <div class="login-feature-list">
+          <div class="login-feature">
+            <span class="login-feature-icon">🛠️</span>
+            <div>
+              <strong>Volledig beheer</strong>
+              <p>Voeg nieuwe races en sprintuitslagen toe.</p>
+            </div>
+          </div>
+          <div class="login-feature">
+            <span class="login-feature-icon">☁️</span>
+            <div>
+              <strong>Live database</strong>
+              <p>Alle apparaten zien direct dezelfde data.</p>
+            </div>
+          </div>
+          <div class="login-feature">
+            <span class="login-feature-icon">🔒</span>
+            <div>
+              <strong>Beveiligde toegang</strong>
+              <p>Alleen geautoriseerde gebruikers kunnen wijzigen.</p>
+            </div>
+          </div>
+        </div>
       </div>
 
-      <div class="field">
-        <label for="passwordInput">Wachtwoord</label>
-        <input id="passwordInput" type="password" placeholder="Wachtwoord" />
-      </div>
+      <div class="login-right">
+        <div class="login-card">
+          <div class="login-card-top">
+            <span class="preview-pill">Admin access</span>
+          </div>
+          <h2>Login</h2>
+          <p class="sub">Na succesvol inloggen word je doorgestuurd naar het beheerpaneel.</p>
 
-      <div class="landing-actions left">
-        <button id="loginBtn" class="btn btn-primary" type="button">Inloggen</button>
-        <a class="btn btn-secondary" href="public.html">Alleen bekijken</a>
-      </div>
+          <div class="field">
+            <label for="emailInput">E-mailadres</label>
+            <input id="emailInput" type="email" placeholder="beheer@voorbeeld.nl" />
+          </div>
 
-      <p id="loginMessage" class="message"></p>
+          <div class="field">
+            <label for="passwordInput">Wachtwoord</label>
+            <input id="passwordInput" type="password" placeholder="Wachtwoord" />
+          </div>
+
+          <div class="landing-actions vertical-actions">
+            <button id="loginBtn" class="btn btn-primary" type="button">Inloggen</button>
+            <a class="btn btn-secondary" href="public.html">Alleen bekijken</a>
+          </div>
+
+          <p id="loginMessage" class="message"></p>
+        </div>
+      </div>
     </section>
   </div>
 

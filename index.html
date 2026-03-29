@@ -7,35 +7,75 @@
   <link rel="stylesheet" href="styles.css" />
 </head>
 <body class="landing-body">
+  <div class="landing-bg"></div>
   <div class="landing-shell">
-    <section class="landing-card hero-card">
-      <p class="eyebrow">Kart Competitie</p>
-      <h1>🏁 Welkom bij de kart competitie</h1>
-      <p class="sub">
-        Bekijk live de seizoensstand, race-overzichten en resultaten van alle sprint races.
-        Beheerders kunnen na inloggen nieuwe races toevoegen en resultaten aanpassen.
-      </p>
+    <section class="landing-hero">
+      <div class="landing-hero-left">
+        <p class="eyebrow">Kart Competitie</p>
+        <h1>🏁 Live races, seizoensstand en beheerdashboard</h1>
+        <p class="sub large-sub">
+          Volg alle sprintresultaten live, bekijk de seizoensstand en beheer de volledige competitie
+          vanuit één centrale omgeving.
+        </p>
 
-      <div class="landing-actions">
-        <a class="btn btn-primary" href="public.html">Bekijk leaderboard</a>
-        <a class="btn btn-secondary" href="login.html">Beheerder login</a>
+        <div class="landing-actions">
+          <a class="btn btn-primary" href="public.html">Bekijk tussenstand</a>
+          <a class="btn btn-secondary" href="login.html">Beheerder login</a>
+        </div>
+
+        <div class="landing-stats">
+          <div class="stat-card">
+            <span class="stat-label">Structuur</span>
+            <strong>2 sprint races</strong>
+            <span class="stat-sub">per race van 10 minuten</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Updates</span>
+            <strong>Live sync</strong>
+            <span class="stat-sub">via Firebase database</span>
+          </div>
+          <div class="stat-card">
+            <span class="stat-label">Toegang</span>
+            <strong>Beveiligd beheer</strong>
+            <span class="stat-sub">alleen voor admins</span>
+          </div>
+        </div>
       </div>
-    </section>
 
-    <section class="landing-card info-card">
-      <h2>Wat kun je hier doen?</h2>
-      <div class="info-grid">
-        <div class="info-box">
-          <h3>Live overzicht</h3>
-          <p>Iedereen kan de seizoensstand, racegeschiedenis en sprintresultaten bekijken.</p>
-        </div>
-        <div class="info-box">
-          <h3>Beveiligd beheer</h3>
-          <p>Alleen beheerders met de juiste inloggegevens kunnen data toevoegen of wijzigen.</p>
-        </div>
-        <div class="info-box">
-          <h3>2 sprint races</h3>
-          <p>Elke race bestaat uit 2 sprint races van 10 minuten met automatische puntentelling.</p>
+      <div class="landing-hero-right">
+        <div class="preview-card">
+          <div class="preview-top">
+            <span class="preview-pill">Live overzicht</span>
+            <span class="preview-dot"></span>
+          </div>
+
+          <h3>Wat kun je hier doen?</h3>
+
+          <div class="preview-list">
+            <div class="preview-item">
+              <div class="preview-icon">🏆</div>
+              <div>
+                <strong>Bekijk de tussenstand</strong>
+                <p>Iedereen kan de seizoensstand en racehistorie volgen.</p>
+              </div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-icon">📋</div>
+              <div>
+                <strong>Volg race overzichten</strong>
+                <p>Per driver zie je sprint 1, sprint 2 en het totaal aantal punten.</p>
+              </div>
+            </div>
+
+            <div class="preview-item">
+              <div class="preview-icon">🔐</div>
+              <div>
+                <strong>Beheer na inloggen</strong>
+                <p>Alleen beheerders kunnen races toevoegen, wijzigen of verwijderen.</p>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </section>
