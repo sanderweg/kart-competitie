@@ -1,4 +1,9 @@
-const STORAGE_KEY = "kart_competitie_races_v2";
+const STORAGE_KEY = "kart_competitie_races_v3";
+const POINTS_MAP = {
+  1: 25, 2: 22, 3: 20, 4: 19, 5: 18, 6: 17, 7: 16, 8: 15, 9: 14, 10: 13, 11: 12,
+  12: 11, 13: 10, 14: 9, 15: 8, 16: 7, 17: 6, 18: 5, 19: 4, 20: 3, 21: 2, 22: 1
+};
+
 let races = loadRaces();
 
 const raceNameInput = document.getElementById("raceName");
@@ -8,6 +13,7 @@ const messageEl = document.getElementById("message");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const historyList = document.getElementById("historyList");
 const importInput = document.getElementById("importInput");
+const pointsOverview = document.getElementById("pointsOverview");
 
 document.getElementById("addDriverBtn").addEventListener("click", () => addDriverRow());
 document.getElementById("saveRaceBtn").addEventListener("click", saveRace);
@@ -41,7 +47,13 @@ function formatDate(dateString) {
   return date.toLocaleDateString("nl-NL");
 }
 
-function addDriverRow(name = "", points = "") {
+function renderPointsOverview() {
+  pointsOverview.innerHTML = Object.entries(POINTS_MAP)
+    .map(([position, points]) => `<div class="points-chip">Positie ${position}: <strong>${points} pt</strong></div>`)
+    .join("");
+}
+
+function addDriverRow(name = "", position = "", points = "") {
   const row = document.createElement("div");
   row.className = "driver-row";
   row.innerHTML = `
@@ -50,15 +62,32 @@ function addDriverRow(name = "", points = "") {
       <input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}" />
     </div>
     <div class="field">
+      <label>Positie</label>
+      <input type="number" class="driver-position" placeholder="Bijv. 1" min="1" max="22" value="${position}" />
+    </div>
+    <div class="field">
       <label>Punten</label>
-      <input type="number" class="driver-points" placeholder="Bijv. 25" min="0" value="${points}" />
+      <input type="number" class="driver-points-preview" value="${points}" disabled />
     </div>
     <button type="button" class="remove-driver">Verwijderen</button>
   `;
+
+  const positionInput = row.querySelector(".driver-position");
+  const pointsPreview = row.querySelector(".driver-points-preview");
+
+  function updatePreview() {
+    const position = Number(positionInput.value);
+    pointsPreview.value = POINTS_MAP[position] ?? 0;
+  }
+
+  positionInput.addEventListener("input", updatePreview);
+  updatePreview();
+
   row.querySelector(".remove-driver").addEventListener("click", () => {
     row.remove();
     if (!driversList.children.length) addDriverRow();
   });
+
   driversList.appendChild(row);
 }
 
@@ -67,13 +96,15 @@ function getDriversFromForm() {
   return rows
     .map(row => {
       const name = row.querySelector(".driver-name").value.trim();
-      const pointsValue = row.querySelector(".driver-points").value.trim();
+      const positionValue = row.querySelector(".driver-position").value.trim();
+      const position = positionValue === "" ? NaN : Number(positionValue);
       return {
         name,
-        points: pointsValue === "" ? NaN : Number(pointsValue)
+        position,
+        points: POINTS_MAP[position] ?? 0
       };
     })
-    .filter(driver => driver.name !== "" || !Number.isNaN(driver.points));
+    .filter(driver => driver.name !== "" || !Number.isNaN(driver.position));
 }
 
 function saveRace() {
@@ -96,9 +127,29 @@ function saveRace() {
     return;
   }
 
-  const invalidDriver = drivers.find(driver => !driver.name || Number.isNaN(driver.points) || driver.points < 0);
+  const invalidDriver = drivers.find(driver =>
+    !driver.name ||
+    Number.isNaN(driver.position) ||
+    driver.position < 1 ||
+    driver.position > 22
+  );
+
   if (invalidDriver) {
-    setMessage("Elke driver moet een naam en geldige punten hebben.", "error");
+    setMessage("Elke driver moet een naam en een positie tussen 1 en 22 hebben.", "error");
+    return;
+  }
+
+  const positions = drivers.map(driver => driver.position);
+  const duplicatePosition = positions.find((pos, index) => positions.indexOf(pos) !== index);
+  if (duplicatePosition) {
+    setMessage(`Positie ${duplicatePosition} is dubbel ingevuld. Elke positie mag maar 1 keer voorkomen.`, "error");
+    return;
+  }
+
+  const driverNames = drivers.map(driver => driver.name.toLowerCase());
+  const duplicateDriver = driverNames.find((name, index) => driverNames.indexOf(name) !== index);
+  if (duplicateDriver) {
+    setMessage("Dezelfde driver staat dubbel in deze race.", "error");
     return;
   }
 
@@ -137,19 +188,25 @@ function renderLeaderboard() {
   races.forEach(race => {
     race.drivers.forEach(driver => {
       if (!totals[driver.name]) {
-        totals[driver.name] = { points: 0, races: 0 };
+        totals[driver.name] = { points: 0, races: 0, bestPosition: Infinity };
       }
       totals[driver.name].points += Number(driver.points) || 0;
       totals[driver.name].races += 1;
+      totals[driver.name].bestPosition = Math.min(totals[driver.name].bestPosition, Number(driver.position));
     });
   });
 
   const sorted = Object.entries(totals)
     .map(([name, data]) => ({ name, ...data }))
-    .sort((a, b) => b.points - a.points || b.races - a.races || a.name.localeCompare(b.name, "nl"));
+    .sort((a, b) =>
+      b.points - a.points ||
+      a.bestPosition - b.bestPosition ||
+      b.races - a.races ||
+      a.name.localeCompare(b.name, "nl")
+    );
 
   if (!sorted.length) {
-    leaderboardBody.innerHTML = `<tr><td colspan="4" class="empty">Nog geen races opgeslagen.</td></tr>`;
+    leaderboardBody.innerHTML = `<tr><td colspan="5" class="empty">Nog geen races opgeslagen.</td></tr>`;
     return;
   }
 
@@ -159,6 +216,7 @@ function renderLeaderboard() {
       <td>${escapeHtml(driver.name)}</td>
       <td>${driver.points}</td>
       <td>${driver.races}</td>
+      <td>P${driver.bestPosition}</td>
     </tr>
   `).join("");
 }
@@ -180,8 +238,8 @@ function renderHistory() {
       </div>
       <ol class="race-drivers">
         ${[...race.drivers]
-          .sort((a, b) => b.points - a.points || a.name.localeCompare(b.name, "nl"))
-          .map(driver => `<li>${escapeHtml(driver.name)} - ${driver.points} punten</li>`)
+          .sort((a, b) => a.position - b.position)
+          .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
           .join("")}
       </ol>
     </article>
@@ -226,7 +284,15 @@ function importData(event) {
     try {
       const imported = JSON.parse(e.target.result);
       if (!Array.isArray(imported)) throw new Error("Bestand bevat geen race-lijst.");
-      races = imported;
+
+      races = imported.map(race => ({
+        ...race,
+        drivers: (race.drivers || []).map(driver => ({
+          ...driver,
+          points: POINTS_MAP[Number(driver.position)] ?? Number(driver.points) ?? 0
+        }))
+      }));
+
       persist();
       render();
       setMessage("Data succesvol geïmporteerd.", "success");
@@ -254,5 +320,6 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
+renderPointsOverview();
 resetForm();
 render();

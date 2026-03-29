@@ -12,13 +12,14 @@
       <div>
         <p class="eyebrow">Kart Competitie</p>
         <h1>🏁 Racebeheer & Leaderboard</h1>
-        <p class="sub">Voeg races en drivers toe, bouw een geschiedenis op en houd automatisch een leaderboard bij.</p>
+        <p class="sub">Voeg races en drivers toe, vul posities in en laat de leaderboard automatisch punten berekenen.</p>
       </div>
     </header>
 
     <main class="grid">
       <section class="card">
         <h2>Nieuwe race</h2>
+
         <div class="field">
           <label for="raceName">Race naam</label>
           <input id="raceName" type="text" placeholder="Bijv. Clubrace 1" />
@@ -30,11 +31,16 @@
         </div>
 
         <div class="drivers-header">
-          <h3>Drivers</h3>
+          <h3>Drivers & posities</h3>
           <button id="addDriverBtn" class="secondary" type="button">+ Driver toevoegen</button>
         </div>
 
         <div id="driversList" class="drivers-list"></div>
+
+        <div class="points-card">
+          <h3>Puntentelling</h3>
+          <div id="pointsOverview" class="points-overview"></div>
+        </div>
 
         <div class="actions">
           <button id="saveRaceBtn" type="button">Race opslaan</button>
@@ -57,6 +63,7 @@
                 <th>Driver</th>
                 <th>Punten</th>
                 <th>Races</th>
+                <th>Beste positie</th>
               </tr>
             </thead>
             <tbody id="leaderboardBody"></tbody>
