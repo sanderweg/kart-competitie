@@ -130,21 +130,24 @@ function buildSeasonRows(races) {
 
   return Object.values(allDrivers).map(driver => {
     const sortedRacePoints = [...driver.racePoints].sort((a, b) => a - b);
-    const droppedRace = sortedRacePoints.length ? sortedRacePoints[0] : 0;
-    const countedPoints = sortedRacePoints.slice(1).reduce((sum, p) => sum + p, 0);
+    const droppedRaces = sortedRacePoints.slice(0, 2);
+    const countedPoints = sortedRacePoints.slice(2).reduce((sum, p) => sum + p, 0);
+
     return {
       driver: driver.driver,
       points: countedPoints,
       races: raceCount,
-      droppedRace,
+      droppedRaces: droppedRaces.join(" + "),
       bestSprint: driver.bestSprint
     };
-  }).sort((a, b) => b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl"));
+  }).sort((a, b) =>
+    b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl")
+  );
 }
 
 function renderSeasonStand() {
   const rows = buildSeasonRows(races);
-  seasonBody.innerHTML = rows.length ? rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.droppedRace}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
+  seasonBody.innerHTML = rows.length ? rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.droppedRacess}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
 }
 function renderRaceTable() {
   const rows = [];
