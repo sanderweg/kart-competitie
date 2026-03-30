@@ -4,6 +4,7 @@ const connectionStatus = document.getElementById("connectionStatus");
 const seasonBody = document.getElementById("seasonBody");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const raceTabs = document.getElementById("raceTabs");
+const raceSelect = document.getElementById("raceSelect");
 const historyList = document.getElementById("historyList");
 
 let races = [];
@@ -27,7 +28,7 @@ function renderSeasonStand() {
 
 
 function renderRaceTabs() {
-  if (!raceTabs) return;
+  if (!raceTabs || !raceSelect) return;
 
   const eligibleRaces = races.filter(race => !race.isDraft);
   const tabs = [{ id: "all", label: "Alle races" }, ...eligibleRaces.map(race => ({ id: race.id, label: race.name }))];
@@ -36,11 +37,21 @@ function renderRaceTabs() {
     selectedRaceId = "all";
   }
 
+  raceSelect.innerHTML = tabs.map(tab => `
+    <option value="${tab.id}" ${tab.id === selectedRaceId ? "selected" : ""}>${escapeHtml(tab.label)}</option>
+  `).join("");
+
   raceTabs.innerHTML = tabs.map(tab => `
     <button type="button" class="race-tab ${tab.id === selectedRaceId ? "active" : ""}" data-race-id="${tab.id}">
       ${escapeHtml(tab.label)}
     </button>
   `).join("");
+
+  raceSelect.onchange = () => {
+    selectedRaceId = raceSelect.value;
+    renderRaceTabs();
+    renderRaceTable();
+  };
 
   raceTabs.querySelectorAll(".race-tab").forEach(btn => {
     btn.addEventListener("click", () => {

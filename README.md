@@ -20,3 +20,4 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 - concept-races tellen niet mee in de stand of live leaderboard tot ze volledig zijn ingevuld
 
 - race overzicht heeft nu tabs om te wisselen tussen alle races of één specifieke race
+- race overzicht heeft nu een duidelijke filterbox met dropdown én tabs
