@@ -15,3 +15,6 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 
 - drivernaam autocomplete toegevoegd in het beheerpaneel
 - autocomplete vult nu ook automatisch aan bij unieke match, bijvoorbeeld `San` -> `Sander Weggen`
+
+- concept-races toegevoegd: je kunt nu een race klaarzetten zonder posities
+- concept-races tellen niet mee in de stand of live leaderboard tot ze volledig zijn ingevuld

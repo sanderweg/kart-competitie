@@ -8,7 +8,7 @@ const historyList = document.getElementById("historyList");
 let races = [];
 
 function renderSeasonStand() {
-  const rows = buildSeasonRows(races);
+  const rows = buildSeasonRows(races.filter(race => !race.isDraft));
   seasonBody.innerHTML = rows.length
     ? rows.map((row, index) => `
       <tr>
@@ -25,7 +25,7 @@ function renderSeasonStand() {
 
 function renderRaceTable() {
   const rows = [];
-  races.forEach(race => {
+  races.filter(race => !race.isDraft).forEach(race => {
     (race.results || []).forEach(result => {
       rows.push({
         driver: result.driver,
@@ -80,7 +80,7 @@ function renderHistory() {
         <div class="race-top">
           <div>
             <h3>${escapeHtml(race.name)}</h3>
-            <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten</div>
+            <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten${race.isDraft ? " · Concept" : ""}</div>
           </div>
         </div>
         <div class="split-columns">

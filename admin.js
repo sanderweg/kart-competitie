@@ -17,6 +17,7 @@ const logoutBtn = document.getElementById("logoutBtn");
 const addSprint1DriverBtn = document.getElementById("addSprint1DriverBtn");
 const addSprint2DriverBtn = document.getElementById("addSprint2DriverBtn");
 const saveRaceBtn = document.getElementById("saveRaceBtn");
+const saveDraftBtn = document.getElementById("saveDraftBtn");
 const resetFormBtn = document.getElementById("resetFormBtn");
 const exportBtn = document.getElementById("exportBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
@@ -56,7 +57,7 @@ function refreshDriverSuggestions() {
   const seen = new Set();
   const names = [];
 
-  races.forEach(race => {
+  races.filter(race => !race.isDraft).forEach(race => {
     [...(race.sprint1Drivers || []), ...(race.sprint2Drivers || [])].forEach(driver => {
       const clean = String(driver.name || "").trim().replace(/\s+/g, " ");
       const key = normalizeDriverName(clean);
@@ -219,8 +220,24 @@ function loadRaceIntoForm(race) {
   setMessage(`Je bewerkt nu: ${race.name}`, "success");
 }
 
-async function saveRace() {
-  if (!currentUser) return;
+
+function validateDraftSprint(drivers, label) {
+  if (!drivers.length) return `${label} heeft nog geen drivers.`;
+  const invalidName = drivers.find(d => !d.name);
+  if (invalidName) return `${label} heeft een driver zonder naam.`;
+
+  const names = drivers.map(d => d.name.toLowerCase());
+  for (let i = 0; i < names.length; i++) {
+    if (names.indexOf(names[i]) !== i) return `${label}: dezelfde driver staat dubbel.`;
+  }
+  return "";
+}
+
+async function saveRaceWithMode(isDraft) {
+  if (!currentUser) {
+    setMessage("Log eerst in om races op te slaan.", "error");
+    return;
+  }
 
   try {
     const raceName = raceNameInput.value.trim();
@@ -231,33 +248,52 @@ async function saveRace() {
     if (!raceName) return setMessage("Vul eerst een racenaam in.", "error");
     if (!raceDate) return setMessage("Kies eerst een datum.", "error");
 
-    const sprint1Error = validateSprint(sprint1Drivers, "Sprint 1");
+    const sprint1Error = isDraft ? validateDraftSprint(sprint1Drivers, "Sprint 1") : validateSprint(sprint1Drivers, "Sprint 1");
     if (sprint1Error) return setMessage(sprint1Error, "error");
-
-    const sprint2Error = validateSprint(sprint2Drivers, "Sprint 2");
+    const sprint2Error = isDraft ? validateDraftSprint(sprint2Drivers, "Sprint 2") : validateSprint(sprint2Drivers, "Sprint 2");
     if (sprint2Error) return setMessage(sprint2Error, "error");
 
-    const results = mergeResults(sprint1Drivers, sprint2Drivers);
+    const normalizedSprint1 = sprint1Drivers.map(d => ({
+      ...d,
+      position: Number.isNaN(d.position) ? "" : d.position,
+      points: Number.isNaN(d.position) ? 0 : d.points
+    }));
+    const normalizedSprint2 = sprint2Drivers.map(d => ({
+      ...d,
+      position: Number.isNaN(d.position) ? "" : d.position,
+      points: Number.isNaN(d.position) ? 0 : d.points
+    }));
+
+    const results = isDraft ? [] : mergeResults(normalizedSprint1, normalizedSprint2);
     const raceId = editingRaceId || push(ref(db, DB_PATH)).key;
 
     await set(ref(db, DB_PATH + "/" + raceId), {
       id: raceId,
       name: raceName,
       date: raceDate,
-      sprint1Drivers,
-      sprint2Drivers,
+      sprint1Drivers: normalizedSprint1,
+      sprint2Drivers: normalizedSprint2,
       results,
+      isDraft,
       createdAt: Date.now(),
       createdBy: currentUser.email || currentUser.uid
     });
 
     const wasEditing = !!editingRaceId;
     resetForm(false);
-    setMessage(wasEditing ? "Uitslag succesvol bijgewerkt." : "Race succesvol opgeslagen.", "success");
+    if (isDraft) {
+      setMessage(wasEditing ? "Concept-race succesvol bijgewerkt." : "Concept-race opgeslagen.", "success");
+    } else {
+      setMessage(wasEditing ? "Uitslag succesvol bijgewerkt." : "Race succesvol opgeslagen.", "success");
+    }
   } catch (error) {
     console.error(error);
     setMessage("Opslaan mislukt.", "error");
   }
+}
+
+async function saveRace() {
+  await saveRaceWithMode(false);
 }
 
 function resetForm(clearMessage = true) {
@@ -275,7 +311,7 @@ function resetForm(clearMessage = true) {
 }
 
 function renderSeasonStand() {
-  const rows = buildSeasonRows(races);
+  const rows = buildSeasonRows(races.filter(race => !race.isDraft));
   seasonBody.innerHTML = rows.length
     ? rows.map((row, index) => `
       <tr>
@@ -347,7 +383,7 @@ function renderHistory() {
         <div class="race-top">
           <div>
             <h3>${escapeHtml(race.name)}</h3>
-            <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten</div>
+            <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten${race.isDraft ? " · Concept" : ""}</div>
           </div>
           <div class="race-actions">
             <button type="button" class="secondary edit-race-btn" data-id="${race.id}">Uitslag bewerken</button>
@@ -411,6 +447,7 @@ function exportData() {
 addSprint1DriverBtn.addEventListener("click", () => addDriverRow(sprint1DriversList));
 addSprint2DriverBtn.addEventListener("click", () => addDriverRow(sprint2DriversList));
 saveRaceBtn.addEventListener("click", saveRace);
+saveDraftBtn.addEventListener("click", () => saveRaceWithMode(true));
 resetFormBtn.addEventListener("click", () => resetForm(true));
 cancelEditBtn.addEventListener("click", () => resetForm(true));
 exportBtn.addEventListener("click", exportData);
