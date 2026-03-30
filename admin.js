@@ -6,6 +6,7 @@ const sprint1DriversList = document.getElementById("sprint1DriversList");
 const sprint2DriversList = document.getElementById("sprint2DriversList");
 const messageEl = document.getElementById("message");
 const leaderboardBody = document.getElementById("leaderboardBody");
+const raceTabs = document.getElementById("raceTabs");
 const seasonBody = document.getElementById("seasonBody");
 const historyList = document.getElementById("historyList");
 const connectionStatus = document.getElementById("connectionStatus");
@@ -24,6 +25,7 @@ const clearAllBtn = document.getElementById("clearAllBtn");
 const driverSuggestions = document.getElementById("driverSuggestions");
 
 let races = [];
+let selectedRaceId = "all";
 let currentUser = null;
 let editingRaceId = null;
 
@@ -326,9 +328,37 @@ function renderSeasonStand() {
     : '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
 }
 
+
+function renderRaceTabs() {
+  if (!raceTabs) return;
+
+  const eligibleRaces = races.filter(race => !race.isDraft);
+  const tabs = [{ id: "all", label: "Alle races" }, ...eligibleRaces.map(race => ({ id: race.id, label: race.name }))];
+
+  if (selectedRaceId !== "all" && !eligibleRaces.find(r => r.id === selectedRaceId)) {
+    selectedRaceId = "all";
+  }
+
+  raceTabs.innerHTML = tabs.map(tab => `
+    <button type="button" class="race-tab ${tab.id === selectedRaceId ? "active" : ""}" data-race-id="${tab.id}">
+      ${escapeHtml(tab.label)}
+    </button>
+  `).join("");
+
+  raceTabs.querySelectorAll(".race-tab").forEach(btn => {
+    btn.addEventListener("click", () => {
+      selectedRaceId = btn.dataset.raceId;
+      renderRaceTabs();
+      renderRaceTable();
+    });
+  });
+}
+
 function renderRaceTable() {
   const rows = [];
-  races.forEach(race => {
+  const sourceRaces = races.filter(race => !race.isDraft).filter(race => selectedRaceId === "all" ? true : race.id === selectedRaceId);
+
+  sourceRaces.forEach(race => {
     (race.results || []).forEach(result => {
       rows.push({
         driver: result.driver,
@@ -356,8 +386,9 @@ function renderRaceTable() {
         <td>${row.totalPoints}</td>
       </tr>
     `).join("")
-    : '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
+    : '<tr><td colspan="6" class="empty">Geen data voor deze selectie.</td></tr>';
 }
+
 
 function renderHistory() {
   if (!races.length) {
@@ -470,6 +501,7 @@ onValue(ref(db, DB_PATH), snapshot => {
   const data = snapshot.val() || {};
   races = Object.values(data).sort((a, b) => new Date(a.date) - new Date(b.date));
   renderSeasonStand();
+  renderRaceTabs();
   renderRaceTable();
   renderHistory();
   refreshDriverSuggestions();

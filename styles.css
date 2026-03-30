@@ -48,3 +48,24 @@ button:hover,.btn:hover{transform:translateY(-1px)}button:disabled{opacity:.55;c
 .empty{color:var(--muted);padding:8px 0}.back-link{color:var(--muted);text-decoration:none;display:inline-block;margin-bottom:12px}.back-link:hover{color:var(--text)}
 .hidden{display:none!important}
 @media (max-width:980px){.grid,.split-columns,.driver-row,.landing-hero,.landing-stats,.login-panel{grid-template-columns:1fr}}
+
+.race-tabs{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:0 0 14px;
+}
+.race-tab{
+  background:#2c3442;
+  color:var(--text);
+  border:1px solid var(--border);
+  border-radius:999px;
+  padding:10px 14px;
+  cursor:pointer;
+  font-weight:bold;
+}
+.race-tab.active{
+  background:rgba(0,211,167,.12);
+  color:var(--accent);
+  border-color:rgba(0,211,167,.25);
+}

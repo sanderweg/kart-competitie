@@ -18,3 +18,5 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 
 - concept-races toegevoegd: je kunt nu een race klaarzetten zonder posities
 - concept-races tellen niet mee in de stand of live leaderboard tot ze volledig zijn ingevuld
+
+- race overzicht heeft nu tabs om te wisselen tussen alle races of één specifieke race
