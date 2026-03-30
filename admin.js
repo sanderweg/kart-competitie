@@ -20,6 +20,7 @@ const saveRaceBtn = document.getElementById("saveRaceBtn");
 const resetFormBtn = document.getElementById("resetFormBtn");
 const exportBtn = document.getElementById("exportBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
+const driverSuggestions = document.getElementById("driverSuggestions");
 
 let races = [];
 let currentUser = null;
@@ -42,13 +43,41 @@ function updateEditUi() {
   saveRaceBtn.textContent = editing ? "Wijzigingen opslaan" : "Race opslaan";
 }
 
+function normalizeDriverName(name) {
+  return String(name || "")
+    .trim()
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
+function refreshDriverSuggestions() {
+  if (!driverSuggestions) return;
+
+  const seen = new Set();
+  const names = [];
+
+  races.forEach(race => {
+    [...(race.sprint1Drivers || []), ...(race.sprint2Drivers || [])].forEach(driver => {
+      const clean = String(driver.name || "").trim().replace(/\s+/g, " ");
+      const key = normalizeDriverName(clean);
+      if (clean && !seen.has(key)) {
+        seen.add(key);
+        names.push(clean);
+      }
+    });
+  });
+
+  names.sort((a, b) => a.localeCompare(b, "nl"));
+  driverSuggestions.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
+}
+
 function addDriverRow(targetList, name = "", position = "") {
   const row = document.createElement("div");
   row.className = "driver-row";
   row.innerHTML = `
     <div class="field">
       <label>Driver naam</label>
-      <input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}" />
+      <input type="text" class="driver-name" list="driverSuggestions" autocomplete="on" placeholder="Bijv. Max" value="${escapeHtml(name)}" />
     </div>
     <div class="field">
       <label>Positie</label>
@@ -82,7 +111,8 @@ function addDriverRow(targetList, name = "", position = "") {
 function getDriversFromList(targetList) {
   return [...targetList.querySelectorAll(".driver-row")]
     .map(row => {
-      const name = row.querySelector(".driver-name").value.trim();
+      const rawName = row.querySelector(".driver-name").value;
+      const name = String(rawName || "").trim().replace(/\s+/g, " ");
       const posText = row.querySelector(".driver-position").value.trim();
       const position = posText === "" ? NaN : Number(posText);
       return { name, position, points: getPoints(position) };
@@ -343,6 +373,7 @@ onValue(ref(db, DB_PATH), snapshot => {
   renderSeasonStand();
   renderRaceTable();
   renderHistory();
+  refreshDriverSuggestions();
 });
 
 onValue(ref(db, ".info/connected"), snapshot => {
