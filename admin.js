@@ -71,6 +71,68 @@ function refreshDriverSuggestions() {
   driverSuggestions.innerHTML = names.map(name => `<option value="${escapeHtml(name)}"></option>`).join("");
 }
 
+function getDriverSuggestionNames() {
+  const options = [...driverSuggestions.querySelectorAll("option")];
+  return options.map(option => option.value).filter(Boolean);
+}
+
+function attachAutocompleteBehavior(input) {
+  if (!input || input.dataset.autocompleteAttached === "true") return;
+  input.dataset.autocompleteAttached = "true";
+
+  input.addEventListener("input", () => {
+    const typed = input.value;
+    const cleanTyped = String(typed || "").replace(/\s+/g, " ").trim();
+    if (!cleanTyped) return;
+
+    const matches = getDriverSuggestionNames().filter(name =>
+      normalizeDriverName(name).startsWith(normalizeDriverName(cleanTyped))
+    );
+
+    if (matches.length === 1) {
+      const match = matches[0];
+      if (normalizeDriverName(match) !== normalizeDriverName(cleanTyped)) {
+        input.value = match;
+        input.setSelectionRange(cleanTyped.length, match.length);
+      }
+    }
+  });
+
+  input.addEventListener("blur", () => {
+    const typed = String(input.value || "").replace(/\s+/g, " ").trim();
+    if (!typed) return;
+
+    const exact = getDriverSuggestionNames().find(name =>
+      normalizeDriverName(name) === normalizeDriverName(typed)
+    );
+    if (exact) {
+      input.value = exact;
+      return;
+    }
+
+    const starts = getDriverSuggestionNames().filter(name =>
+      normalizeDriverName(name).startsWith(normalizeDriverName(typed))
+    );
+    if (starts.length === 1) {
+      input.value = starts[0];
+    }
+  });
+
+  input.addEventListener("keydown", (event) => {
+    if (event.key !== "Tab" && event.key !== "Enter") return;
+
+    const typed = String(input.value || "").replace(/\s+/g, " ").trim();
+    if (!typed) return;
+
+    const starts = getDriverSuggestionNames().filter(name =>
+      normalizeDriverName(name).startsWith(normalizeDriverName(typed))
+    );
+    if (starts.length === 1) {
+      input.value = starts[0];
+    }
+  });
+}
+
 function addDriverRow(targetList, name = "", position = "") {
   const row = document.createElement("div");
   row.className = "driver-row";

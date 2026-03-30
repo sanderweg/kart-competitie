@@ -14,3 +14,4 @@ In deze versie blijft admin.html laden, ook als je nog niet bent ingelogd.
 Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 
 - drivernaam autocomplete toegevoegd in het beheerpaneel
+- autocomplete vult nu ook automatisch aan bij unieke match, bijvoorbeeld `San` -> `Sander Weggen`
