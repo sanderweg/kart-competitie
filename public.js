@@ -5,7 +5,6 @@ const seasonBody = document.getElementById("seasonBody");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const raceTabs = document.getElementById("raceTabs");
 const raceSelect = document.getElementById("raceSelect");
-const historyList = document.getElementById("historyList");
 
 let races = [];
 let selectedRaceId = null;
@@ -104,41 +103,6 @@ function renderRaceTable() {
 }
 
 
-function renderHistory() {
-  if (!races.length) {
-    historyList.innerHTML = '<div class="empty">Nog geen racegeschiedenis beschikbaar.</div>';
-    return;
-  }
-
-  historyList.innerHTML = races.map(race => {
-    const sprint1Items = (race.sprint1Drivers || [])
-      .slice()
-      .sort((a, b) => Number(a.position) - Number(b.position))
-      .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
-      .join("");
-
-    const sprint2Items = (race.sprint2Drivers || [])
-      .slice()
-      .sort((a, b) => Number(a.position) - Number(b.position))
-      .map(driver => `<li>P${driver.position} · ${escapeHtml(driver.name)} · ${driver.points} punten</li>`)
-      .join("");
-
-    return `
-      <article class="race-item">
-        <div class="race-top">
-          <div>
-            <h3>${escapeHtml(race.name)}</h3>
-            <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten${race.isDraft ? " · Concept" : ""}</div>
-          </div>
-        </div>
-        <div class="split-columns">
-          <div><h4>Sprint 1</h4><ol class="race-drivers">${sprint1Items}</ol></div>
-          <div><h4>Sprint 2</h4><ol class="race-drivers">${sprint2Items}</ol></div>
-        </div>
-      </article>
-    `;
-  }).join("");
-}
 
 onValue(ref(db, DB_PATH), snapshot => {
   const data = snapshot.val() || {};
@@ -146,7 +110,6 @@ onValue(ref(db, DB_PATH), snapshot => {
   renderSeasonStand();
   renderRaceTabs();
   renderRaceTable();
-  renderHistory();
 });
 
 onValue(ref(db, ".info/connected"), snapshot => {
