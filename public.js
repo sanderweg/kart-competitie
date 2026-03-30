@@ -8,7 +8,7 @@ const raceSelect = document.getElementById("raceSelect");
 const historyList = document.getElementById("historyList");
 
 let races = [];
-let selectedRaceId = "all";
+let selectedRaceId = null;
 
 function renderSeasonStand() {
   const rows = buildSeasonRows(races.filter(race => !race.isDraft));
@@ -30,18 +30,24 @@ function renderSeasonStand() {
 function renderRaceTabs() {
   if (!raceTabs || !raceSelect) return;
 
-  const eligibleRaces = races.filter(race => !race.isDraft);
-  const tabs = [{ id: "all", label: "Alle races" }, ...eligibleRaces.map(race => ({ id: race.id, label: race.name }))];
+  const eligibleRaces = races.filter(race => !race.isDraft).map(race => ({ id: race.id, label: race.name }));
 
-  if (selectedRaceId !== "all" && !eligibleRaces.find(r => r.id === selectedRaceId)) {
-    selectedRaceId = "all";
+  if (!eligibleRaces.length) {
+    raceSelect.innerHTML = "";
+    raceTabs.innerHTML = "";
+    selectedRaceId = null;
+    return;
   }
 
-  raceSelect.innerHTML = tabs.map(tab => `
+  if (!selectedRaceId || !eligibleRaces.find(r => r.id === selectedRaceId)) {
+    selectedRaceId = eligibleRaces[0].id;
+  }
+
+  raceSelect.innerHTML = eligibleRaces.map(tab => `
     <option value="${tab.id}" ${tab.id === selectedRaceId ? "selected" : ""}>${escapeHtml(tab.label)}</option>
   `).join("");
 
-  raceTabs.innerHTML = tabs.map(tab => `
+  raceTabs.innerHTML = eligibleRaces.map(tab => `
     <button type="button" class="race-tab ${tab.id === selectedRaceId ? "active" : ""}" data-race-id="${tab.id}">
       ${escapeHtml(tab.label)}
     </button>
@@ -64,7 +70,7 @@ function renderRaceTabs() {
 
 function renderRaceTable() {
   const rows = [];
-  const sourceRaces = races.filter(race => !race.isDraft).filter(race => selectedRaceId === "all" ? true : race.id === selectedRaceId);
+  const sourceRaces = races.filter(race => !race.isDraft).filter(race => race.id === selectedRaceId);
 
   sourceRaces.forEach(race => {
     (race.results || []).forEach(result => {

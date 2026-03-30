@@ -21,3 +21,4 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 
 - race overzicht heeft nu tabs om te wisselen tussen alle races of één specifieke race
 - race overzicht heeft nu een duidelijke filterbox met dropdown én tabs
+- optie 'Alle races' verwijderd uit de filter op admin en live leaderboard
