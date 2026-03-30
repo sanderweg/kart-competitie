@@ -1,13 +1,27 @@
-# Kart Competitie met 2 slechtste races vervallen
+# Kart Competitie - Rebuild
 
-Nieuw in deze versie:
-- de 2 laagste races tellen niet mee in de seizoensstand
-- een gemiste race telt automatisch als 0 punten voor die race
-- dit geldt voor iedereen in de seizoensstand
-- positie 0 is toegestaan en geeft 0 punten
-- uitslagen bewerken blijft aanwezig
+Deze rebuild bevat:
+- landing page
+- login page
+- openbare leaderboard
+- admin paneel
+- Firebase realtime sync
+- uitslagen bewerken
+- positie 0 = 0 punten
+- 2 slechtste sprints worden geschrapt
+- gemiste races tellen automatisch als 0 + 0
 
-## Seizoensstand logica
-- 1 race = sprint 1 + sprint 2 samen
-- per driver worden van alle race-totalen de 2 laagste races verwijderd
-- als een driver een raceweekend mist, telt die race als 0 punten
+## Belangrijk
+Deze versie gebruikt de Firebase config die eerder in jouw project stond.
+
+## Rules
+Gebruik minimaal:
+
+```json
+{
+  "rules": {
+    ".read": true,
+    ".write": "auth != null"
+  }
+}
+```
