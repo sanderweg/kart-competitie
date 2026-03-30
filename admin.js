@@ -1,5 +1,4 @@
 import { auth, db, DB_PATH, ref, push, set, remove, onValue, signOut, onAuthStateChanged, getPoints, formatDate, escapeHtml, mergeResults } from "./firebase.js";
-
 const raceNameInput = document.getElementById("raceName");
 const raceDateInput = document.getElementById("raceDate");
 const sprint1DriversList = document.getElementById("sprint1DriversList");
@@ -20,11 +19,9 @@ const saveRaceBtn = document.getElementById("saveRaceBtn");
 const resetFormBtn = document.getElementById("resetFormBtn");
 const exportBtn = document.getElementById("exportBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
-
 let races = [];
 let currentUser = null;
 let editingRaceId = null;
-
 function setMessage(text, type = "") { messageEl.textContent = text || ""; messageEl.className = type ? "message " + type : "message"; }
 function updateAuthUi() { authStatus.textContent = currentUser ? `🔓 Ingelogd als ${currentUser.email}` : "🔒 Niet ingelogd"; }
 function updateEditUi() {
@@ -37,11 +34,7 @@ function updateEditUi() {
 function addDriverRow(targetList, name = "", position = "") {
   const row = document.createElement("div");
   row.className = "driver-row";
-  row.innerHTML = `
-    <div class="field"><label>Driver naam</label><input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}" /></div>
-    <div class="field"><label>Positie</label><input type="number" class="driver-position" min="1" max="22" placeholder="Bijv. 1" value="${position}" /></div>
-    <div class="field"><label>Punten</label><input type="number" class="driver-points-preview" disabled /></div>
-    <button type="button" class="remove-driver">Verwijderen</button>`;
+  row.innerHTML = `<div class="field"><label>Driver naam</label><input type="text" class="driver-name" placeholder="Bijv. Max" value="${escapeHtml(name)}" /></div><div class="field"><label>Positie</label><input type="number" class="driver-position" min="0" max="22" placeholder="Bijv. 1" value="${position}" /></div><div class="field"><label>Punten</label><input type="number" class="driver-points-preview" disabled /></div><button type="button" class="remove-driver">Verwijderen</button>`;
   const positionInput = row.querySelector(".driver-position");
   const pointsInput = row.querySelector(".driver-points-preview");
   const updatePreview = () => { const pos = Number(positionInput.value); pointsInput.value = positionInput.value ? getPoints(pos) : ""; };
@@ -61,8 +54,8 @@ function getDriversFromList(targetList) {
 function validateSprint(drivers, label) {
   if (!drivers.length) return `${label} heeft nog geen drivers.`;
   const invalid = drivers.find(d => !d.name || Number.isNaN(d.position) || d.position < 0 || d.position > 22);
-  if (invalid) return `${label} heeft een driver zonder geldige naam of positie (1 t/m 22).`;
-  const positions = drivers.map(d => d.position);
+  if (invalid) return `${label} heeft een driver zonder geldige naam of positie (0 t/m 22).`;
+  const positions = drivers.map(d => d.position).filter(p => p !== 0);
   for (let i = 0; i < positions.length; i++) if (positions.indexOf(positions[i]) !== i) return `${label}: positie ${positions[i]} is dubbel ingevuld.`;
   const names = drivers.map(d => d.name.toLowerCase());
   for (let i = 0; i < names.length; i++) if (names.indexOf(names[i]) !== i) return `${label}: dezelfde driver staat dubbel.`;
@@ -119,20 +112,39 @@ function resetForm(clearMessage = true) {
   updateEditUi();
   if (clearMessage) setMessage("");
 }
-function renderSeasonStand() {
-  const totals = {};
-  races.forEach(race => {
+function buildSeasonRows(races) {
+  const allDrivers = {};
+  const raceCount = races.length;
+
+  races.forEach((race, raceIndex) => {
     (race.results || []).forEach(result => {
       const key = result.driver.toLowerCase();
-      if (!totals[key]) totals[key] = { driver: result.driver, points: 0, races: 0, bestSprint: 999 };
-      totals[key].driver = result.driver;
-      totals[key].points += Number(result.totalPoints || 0);
-      totals[key].races += 1;
-      totals[key].bestSprint = Math.min(totals[key].bestSprint, Number(result.bestSprint || 999));
+      if (!allDrivers[key]) {
+        allDrivers[key] = { driver: result.driver, bestSprint: 999, racePoints: Array(raceCount).fill(0) };
+      }
+      allDrivers[key].driver = result.driver;
+      allDrivers[key].racePoints[raceIndex] = Number(result.totalPoints || 0);
+      allDrivers[key].bestSprint = Math.min(allDrivers[key].bestSprint, Number(result.bestSprint || 999));
     });
   });
-  const sorted = Object.values(totals).sort((a, b) => b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl"));
-  seasonBody.innerHTML = sorted.length ? sorted.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="5" class="empty">Nog geen data in de database.</td></tr>';
+
+  return Object.values(allDrivers).map(driver => {
+    const sortedRacePoints = [...driver.racePoints].sort((a, b) => a - b);
+    const droppedRace = sortedRacePoints.length ? sortedRacePoints[0] : 0;
+    const countedPoints = sortedRacePoints.slice(1).reduce((sum, p) => sum + p, 0);
+    return {
+      driver: driver.driver,
+      points: countedPoints,
+      races: raceCount,
+      droppedRace,
+      bestSprint: driver.bestSprint
+    };
+  }).sort((a, b) => b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl"));
+}
+
+function renderSeasonStand() {
+  const rows = buildSeasonRows(races);
+  seasonBody.innerHTML = rows.length ? rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.droppedRace}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="6" class="empty">Nog geen data in de database.</td></tr>';
 }
 function renderRaceTable() {
   const rows = [];
@@ -194,7 +206,7 @@ onAuthStateChanged(auth, user => {
 });
 onValue(ref(db, DB_PATH), snapshot => {
   const data = snapshot.val() || {};
-  races = Object.values(data).sort((a, b) => new Date(b.date) - new Date(a.date));
+  races = Object.values(data).sort((a, b) => new Date(a.date) - new Date(b.date));
   renderSeasonStand(); renderRaceTable(); renderHistory();
 });
 onValue(ref(db, ".info/connected"), snapshot => { connectionStatus.textContent = snapshot.val() === true ? "🟢 Live verbonden" : "🔴 Offline"; });

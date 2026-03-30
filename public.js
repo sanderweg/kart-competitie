@@ -1,25 +1,42 @@
 import { db, DB_PATH, ref, onValue, formatDate, escapeHtml } from "./firebase.js";
-
 const connectionStatus = document.getElementById("connectionStatus");
 const seasonBody = document.getElementById("seasonBody");
 const leaderboardBody = document.getElementById("leaderboardBody");
 const historyList = document.getElementById("historyList");
 let races = [];
+function buildSeasonRows(races) {
+  const allDrivers = {};
+  const raceCount = races.length;
 
-function renderSeasonStand() {
-  const totals = {};
-  races.forEach(race => {
+  races.forEach((race, raceIndex) => {
     (race.results || []).forEach(result => {
       const key = result.driver.toLowerCase();
-      if (!totals[key]) totals[key] = { driver: result.driver, points: 0, races: 0, bestSprint: 999 };
-      totals[key].driver = result.driver;
-      totals[key].points += Number(result.totalPoints || 0);
-      totals[key].races += 1;
-      totals[key].bestSprint = Math.min(totals[key].bestSprint, Number(result.bestSprint || 999));
+      if (!allDrivers[key]) {
+        allDrivers[key] = { driver: result.driver, bestSprint: 999, racePoints: Array(raceCount).fill(0) };
+      }
+      allDrivers[key].driver = result.driver;
+      allDrivers[key].racePoints[raceIndex] = Number(result.totalPoints || 0);
+      allDrivers[key].bestSprint = Math.min(allDrivers[key].bestSprint, Number(result.bestSprint || 999));
     });
   });
-  const sorted = Object.values(totals).sort((a, b) => b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl"));
-  seasonBody.innerHTML = sorted.length ? sorted.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="5" class="empty">Nog geen data beschikbaar.</td></tr>';
+
+  return Object.values(allDrivers).map(driver => {
+    const sortedRacePoints = [...driver.racePoints].sort((a, b) => a - b);
+    const droppedRace = sortedRacePoints.length ? sortedRacePoints[0] : 0;
+    const countedPoints = sortedRacePoints.slice(1).reduce((sum, p) => sum + p, 0);
+    return {
+      driver: driver.driver,
+      points: countedPoints,
+      races: raceCount,
+      droppedRace,
+      bestSprint: driver.bestSprint
+    };
+  }).sort((a, b) => b.points - a.points || a.bestSprint - b.bestSprint || a.driver.localeCompare(b.driver, "nl"));
+}
+
+function renderSeasonStand() {
+  const rows = buildSeasonRows(races);
+  seasonBody.innerHTML = rows.length ? rows.map((row, index) => `<tr><td>${index + 1}</td><td>${escapeHtml(row.driver)}</td><td>${row.points}</td><td>${row.races}</td><td>${row.droppedRace}</td><td>${row.bestSprint === 999 ? "-" : "P" + row.bestSprint}</td></tr>`).join("") : '<tr><td colspan="6" class="empty">Nog geen data beschikbaar.</td></tr>';
 }
 function renderRaceTable() {
   const rows = [];
@@ -37,7 +54,7 @@ function renderHistory() {
 }
 onValue(ref(db, DB_PATH), snapshot => {
   const data = snapshot.val() || {};
-  races = Object.values(data).sort((a, b) => new Date(b.date) - new Date(a.date));
+  races = Object.values(data).sort((a, b) => new Date(a.date) - new Date(b.date));
   renderSeasonStand(); renderRaceTable(); renderHistory();
 });
 onValue(ref(db, ".info/connected"), snapshot => { connectionStatus.textContent = snapshot.val() === true ? "🟢 Live verbonden" : "🔴 Offline"; });
