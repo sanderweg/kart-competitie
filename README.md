@@ -1,27 +1,14 @@
-# Kart Competitie - Rebuild
+# Kart Competitie - Rebuild admin fix
 
-Deze rebuild bevat:
-- landing page
-- login page
-- openbare leaderboard
-- admin paneel
+Deze versie bevat:
+- werkende openbare leaderboard
+- admin paneel zonder vastlopen
 - Firebase realtime sync
-- uitslagen bewerken
-- positie 0 = 0 punten
 - 2 slechtste sprints worden geschrapt
-- gemiste races tellen automatisch als 0 + 0
+- gemiste races tellen als 0 + 0
+- positie 0 = 0 punten
+- uitslagen bewerken blijft aanwezig
 
-## Belangrijk
-Deze versie gebruikt de Firebase config die eerder in jouw project stond.
-
-## Rules
-Gebruik minimaal:
-
-```json
-{
-  "rules": {
-    ".read": true,
-    ".write": "auth != null"
-  }
-}
-```
+## Let op
+In deze versie blijft admin.html laden, ook als je nog niet bent ingelogd.
+Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
