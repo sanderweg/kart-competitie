@@ -29,26 +29,21 @@ function renderSeasonStand() {
 function renderRaceTabs() {
   if (!raceTabs || !raceSelect) return;
 
-  const eligibleRaces = races.filter(race => !race.isDraft).map(race => ({ id: race.id, label: race.name }));
+  const eligibleRaces = races.filter(r => !r.isDraft);
 
-  if (!eligibleRaces.length) {
-    raceSelect.innerHTML = "";
-    raceTabs.innerHTML = "";
-    selectedRaceId = null;
-    return;
-  }
-
-  if (!selectedRaceId || !eligibleRaces.find(r => r.id === selectedRaceId)) {
+  if (!selectedRaceId && eligibleRaces.length) {
     selectedRaceId = eligibleRaces[0].id;
   }
 
-  raceSelect.innerHTML = eligibleRaces.map(tab => `
-    <option value="${tab.id}" ${tab.id === selectedRaceId ? "selected" : ""}>${escapeHtml(tab.label)}</option>
+  raceSelect.innerHTML = eligibleRaces.map(r => `
+    <option value="${r.id}" ${r.id === selectedRaceId ? "selected" : ""}>
+      ${escapeHtml(r.name)}
+    </option>
   `).join("");
 
-  raceTabs.innerHTML = eligibleRaces.map(tab => `
-    <button type="button" class="race-tab ${tab.id === selectedRaceId ? "active" : ""}" data-race-id="${tab.id}">
-      ${escapeHtml(tab.label)}
+  raceTabs.innerHTML = eligibleRaces.map(r => `
+    <button class="race-tab ${r.id === selectedRaceId ? "active" : ""}" data-id="${r.id}">
+      ${escapeHtml(r.name)}
     </button>
   `).join("");
 
@@ -59,11 +54,11 @@ function renderRaceTabs() {
   };
 
   raceTabs.querySelectorAll(".race-tab").forEach(btn => {
-    btn.addEventListener("click", () => {
-      selectedRaceId = btn.dataset.raceId;
+    btn.onclick = () => {
+      selectedRaceId = btn.dataset.id;
       renderRaceTabs();
       renderRaceTable();
-    });
+    };
   });
 }
 
