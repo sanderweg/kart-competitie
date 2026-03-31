@@ -24,3 +24,4 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 - optie 'Alle races' verwijderd uit de filter op admin en live leaderboard
 - live leaderboard: seizoensstand en race overzicht onder elkaar gezet
 - live leaderboard: race geschiedenis verwijderd
+- live leaderboard racefilter hersteld: dropdown en tabs zijn nu zichtbaar boven Race overzicht
