@@ -30,3 +30,5 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 
 - tie-break aangepast: bij gelijke punten worden Sprint 1 en Sprint 2 tijd ingevoerd
 - de 2 tijden worden opgeteld, en de laagste totaaltijd komt bovenaan
+
+- admin paneel syntaxfix: dubbele functie in admin.js verwijderd zodat Firebase weer normaal laadt
