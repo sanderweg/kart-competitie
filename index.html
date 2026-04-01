@@ -9,12 +9,7 @@
 <body class="landing-body">
   <div class="landing-bg"></div>
   <div class="landing-shell">
-    
-    <section class="photo-collage">
-      <div class="collage-track" id="collageTrack"></div>
-    </section>
-
-<section class="landing-hero">
+    <section class="landing-hero">
       <div class="landing-hero-left">
         <p class="eyebrow">Kart Competitie</p>
         <h1>🏁 Live races, seizoensstand en beheerdashboard</h1>
@@ -54,16 +49,32 @@
             <span class="preview-dot"></span>
           </div>
 
-          <h3>Wat kun je hier doen?</h3>
+          <h3>📜 Algemeen reglement</h3>
 
-          <div class="preview-list">
-            <div class="preview-item">
-              <div class="preview-icon">🏆</div>
-              <div>
-                <strong>Bekijk de tussenstand</strong>
-                <p>Iedereen kan de seizoensstand en racehistorie volgen.</p>
-              </div>
-            </div>
+<div class="preview-list">
+  <div class="preview-item">
+    <div class="preview-icon">🏁</div>
+    <div>
+      <strong>Zware Jongens competitie</strong>
+      <p>
+        Wij zijn een groep personen welke een zelfstandig kampioenschap organiseren
+        voor de zwaardere rijder, van oudsher "de Zware Jongens".
+      </p>
+    </div>
+  </div>
+
+  <div class="preview-item">
+    <div class="preview-icon">⚖️</div>
+    <div>
+      <strong>Gewichtsregel</strong>
+      <p>
+        100 kg startgewicht is verplicht bij aanvang van de wedstrijd.
+        (maximaal 25 kg straflood toegestaan)
+      </p>
+    </div>
+  </div>
+</div>
+
 
             <div class="preview-item">
               <div class="preview-icon">📋</div>
@@ -85,32 +96,5 @@
       </div>
     </section>
   </div>
-
-  <script>
-    const images = [
-      "foto1.jpg",
-      "foto2.jpg",
-      "foto3.jpg",
-      "foto4.jpg",
-      "foto5.jpg"
-    ];
-
-    const track = document.getElementById("collageTrack");
-
-    function loadCollage() {
-      if (!track) return;
-      track.innerHTML = "";
-
-      [...images, ...images].forEach((file, index) => {
-        const img = document.createElement("img");
-        img.src = "images/" + file;
-        img.alt = "Kart foto " + (index + 1);
-        img.loading = "lazy";
-        track.appendChild(img);
-      });
-    }
-
-    loadCollage();
-  </script>
 </body>
 </html>
