@@ -382,7 +382,9 @@ function renderRaceTable() {
         race: race.name,
         sprint1: result.sprint1Position,
         sprint2: result.sprint2Position,
-        totalPoints: result.totalPoints || 0
+        totalPoints: result.totalPoints || 0,
+        fastestTime: result.fastestTime || "",
+        fastestTimeMs: result.fastestTimeMs
       });
     });
   });

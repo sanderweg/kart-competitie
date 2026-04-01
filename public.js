@@ -9,6 +9,15 @@ const raceSelect = document.getElementById("raceSelect");
 let races = [];
 let selectedRaceId = null;
 
+function sortRaceResultsWithTiebreak(rows) {
+  rows.sort((a, b) =>
+    b.totalPoints - a.totalPoints ||
+    (a.fastestTimeMs == null ? 999999999 : a.fastestTimeMs) - (b.fastestTimeMs == null ? 999999999 : b.fastestTimeMs) ||
+    a.driver.localeCompare(b.driver, "nl")
+  );
+  return rows;
+}
+
 function renderSeasonStand() {
   const rows = buildSeasonRows(races.filter(race => !race.isDraft));
   seasonBody.innerHTML = rows.length
@@ -78,15 +87,14 @@ function renderRaceTable() {
         race: race.name,
         sprint1: result.sprint1Position,
         sprint2: result.sprint2Position,
-        totalPoints: result.totalPoints || 0
+        totalPoints: result.totalPoints || 0,
+        fastestTime: result.fastestTime || "",
+        fastestTimeMs: result.fastestTimeMs
       });
     });
   });
 
-  rows.sort((a, b) =>
-    b.totalPoints - a.totalPoints ||
-    a.driver.localeCompare(b.driver, "nl")
-  );
+  sortRaceResultsWithTiebreak(rows);
 
   leaderboardBody.innerHTML = rows.length
     ? rows.map((row, index) => `
