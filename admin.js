@@ -274,8 +274,6 @@ function applyFastestTimeTiebreak(results, existingRace = null) {
 }
 
 function sortRaceResultsWithTiebreak(rows) {
- 
-function sortRaceResultsWithTiebreak(rows) {
   rows.sort((a, b) =>
     b.totalPoints - a.totalPoints ||
     (a.totalTimeMs == null ? 999999999 : a.totalTimeMs) - (b.totalTimeMs == null ? 999999999 : b.totalTimeMs) ||
