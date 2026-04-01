@@ -53,8 +53,10 @@ export function mergeResults(sprint1Drivers, sprint2Drivers) {
         sprint2Points: 0,
         totalPoints: 0,
         bestSprint: 999,
-        fastestTime: "",
-        fastestTimeMs: null
+        sprint1Time: "",
+        sprint2Time: "",
+        totalTime: "",
+        totalTimeMs: null
       };
     }
     totals[key].driver = driver.name;
@@ -77,8 +79,10 @@ export function mergeResults(sprint1Drivers, sprint2Drivers) {
         sprint2Points: 0,
         totalPoints: 0,
         bestSprint: 999,
-        fastestTime: "",
-        fastestTimeMs: null
+        sprint1Time: "",
+        sprint2Time: "",
+        totalTime: "",
+        totalTimeMs: null
       };
     }
     totals[key].driver = driver.name;

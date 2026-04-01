@@ -205,6 +205,7 @@ function formatMsToTime(ms) {
   return `${minutes}:${seconds}`;
 }
 
+
 function applyFastestTimeTiebreak(results, existingRace = null) {
   const byPoints = new Map();
   results.forEach(result => {
@@ -218,29 +219,54 @@ function applyFastestTimeTiebreak(results, existingRace = null) {
 
     group.forEach(result => {
       const existing = (existingRace?.results || []).find(r => String(r.driver).toLowerCase() === String(result.driver).toLowerCase());
-      if (existing?.fastestTimeMs != null) {
-        result.fastestTimeMs = existing.fastestTimeMs;
-        result.fastestTime = existing.fastestTime || formatMsToTime(existing.fastestTimeMs);
+      if (existing?.totalTimeMs != null) {
+        result.sprint1Time = existing.sprint1Time || "";
+        result.sprint2Time = existing.sprint2Time || "";
+        result.totalTime = existing.totalTime || "";
+        result.totalTimeMs = existing.totalTimeMs;
       }
     });
 
     group.forEach(result => {
-      if (result.fastestTimeMs != null) return;
+      if (result.totalTimeMs != null) return;
+
+      let sprint1Ms = null;
+      let sprint2Ms = null;
+
       while (true) {
-        const input = window.prompt(`Gelijke punten in deze race voor ${result.driver}.\nVul de snelste tijd in (bijv. 1:02.345).`, result.fastestTime || "");
-        if (input === null) {
-          result.fastestTimeMs = 999999999;
-          result.fastestTime = "";
+        const input1 = window.prompt(`Gelijke punten in deze race voor ${result.driver}.\nVul Sprint 1 tijd in (bijv. 1:02.345).`, result.sprint1Time || "");
+        if (input1 === null) {
+          sprint1Ms = 999999999;
+          result.sprint1Time = "";
           break;
         }
-        const ms = parseTimeToMs(input);
-        if (ms != null) {
-          result.fastestTimeMs = ms;
-          result.fastestTime = formatMsToTime(ms);
+        const ms1 = parseTimeToMs(input1);
+        if (ms1 != null) {
+          sprint1Ms = ms1;
+          result.sprint1Time = formatMsToTime(ms1);
           break;
         }
-        window.alert("Ongeldige tijd. Gebruik bijvoorbeeld 1:02.345");
+        window.alert("Ongeldige Sprint 1 tijd. Gebruik bijvoorbeeld 1:02.345");
       }
+
+      while (true) {
+        const input2 = window.prompt(`Gelijke punten in deze race voor ${result.driver}.\nVul Sprint 2 tijd in (bijv. 1:02.345).`, result.sprint2Time || "");
+        if (input2 === null) {
+          sprint2Ms = 999999999;
+          result.sprint2Time = "";
+          break;
+        }
+        const ms2 = parseTimeToMs(input2);
+        if (ms2 != null) {
+          sprint2Ms = ms2;
+          result.sprint2Time = formatMsToTime(ms2);
+          break;
+        }
+        window.alert("Ongeldige Sprint 2 tijd. Gebruik bijvoorbeeld 1:02.345");
+      }
+
+      result.totalTimeMs = sprint1Ms + sprint2Ms;
+      result.totalTime = formatMsToTime(result.totalTimeMs);
     });
   });
 
@@ -248,9 +274,11 @@ function applyFastestTimeTiebreak(results, existingRace = null) {
 }
 
 function sortRaceResultsWithTiebreak(rows) {
+ 
+function sortRaceResultsWithTiebreak(rows) {
   rows.sort((a, b) =>
     b.totalPoints - a.totalPoints ||
-    (a.fastestTimeMs == null ? 999999999 : a.fastestTimeMs) - (b.fastestTimeMs == null ? 999999999 : b.fastestTimeMs) ||
+    (a.totalTimeMs == null ? 999999999 : a.totalTimeMs) - (b.totalTimeMs == null ? 999999999 : b.totalTimeMs) ||
     a.driver.localeCompare(b.driver, "nl")
   );
   return rows;
@@ -389,8 +417,10 @@ function renderRaceTable() {
         sprint1: result.sprint1Position,
         sprint2: result.sprint2Position,
         totalPoints: result.totalPoints || 0,
-        fastestTime: result.fastestTime || "",
-        fastestTimeMs: result.fastestTimeMs
+        sprint1Time: result.sprint1Time || "",
+        sprint2Time: result.sprint2Time || "",
+        totalTime: result.totalTime || "",
+        totalTimeMs: result.totalTimeMs
       });
     });
   });

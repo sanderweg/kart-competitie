@@ -12,7 +12,7 @@ let selectedRaceId = null;
 function sortRaceResultsWithTiebreak(rows) {
   rows.sort((a, b) =>
     b.totalPoints - a.totalPoints ||
-    (a.fastestTimeMs == null ? 999999999 : a.fastestTimeMs) - (b.fastestTimeMs == null ? 999999999 : b.fastestTimeMs) ||
+    (a.totalTimeMs == null ? 999999999 : a.totalTimeMs) - (b.totalTimeMs == null ? 999999999 : b.totalTimeMs) ||
     a.driver.localeCompare(b.driver, "nl")
   );
   return rows;
@@ -63,8 +63,10 @@ function renderRaceTable() {
         sprint1: result.sprint1Position,
         sprint2: result.sprint2Position,
         totalPoints: result.totalPoints || 0,
-        fastestTime: result.fastestTime || "",
-        fastestTimeMs: result.fastestTimeMs
+        sprint1Time: result.sprint1Time || "",
+        sprint2Time: result.sprint2Time || "",
+        totalTime: result.totalTime || "",
+        totalTimeMs: result.totalTimeMs
       });
     });
   });
