@@ -10,20 +10,9 @@
   <div class="landing-bg"></div>
   <div class="landing-shell">
     
-<section class="photo-collage">
-  <div class="collage-track">
-    <img src="images/foto1.jpg">
-    <img src="images/foto2.jpg">
-    <img src="images/foto3.jpg">
-    <img src="images/foto4.jpg">
-    <img src="images/foto5.jpg">
-    <img src="images/foto1.jpg">
-    <img src="images/foto2.jpg">
-    <img src="images/foto3.jpg">
-    <img src="images/foto4.jpg">
-    <img src="images/foto5.jpg">
-  </div>
-</section>
+    <section class="photo-collage">
+      <div class="collage-track" id="collageTrack"></div>
+    </section>
 
 <section class="landing-hero">
       <div class="landing-hero-left">
@@ -96,5 +85,32 @@
       </div>
     </section>
   </div>
+
+  <script>
+    const images = [
+      "foto1.jpg",
+      "foto2.jpg",
+      "foto3.jpg",
+      "foto4.jpg",
+      "foto5.jpg"
+    ];
+
+    const track = document.getElementById("collageTrack");
+
+    function loadCollage() {
+      if (!track) return;
+      track.innerHTML = "";
+
+      [...images, ...images].forEach((file, index) => {
+        const img = document.createElement("img");
+        img.src = "images/" + file;
+        img.alt = "Kart foto " + (index + 1);
+        img.loading = "lazy";
+        track.appendChild(img);
+      });
+    }
+
+    loadCollage();
+  </script>
 </body>
 </html>
