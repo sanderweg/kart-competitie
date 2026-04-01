@@ -111,6 +111,14 @@
           img.src = "images/" + file;
           img.alt = "Zware Jongens foto " + (index + 1);
           img.loading = "lazy";
+          img.tabIndex = 0;
+          img.addEventListener("click", () => openLightbox("images/" + file, img.alt));
+          img.addEventListener("keydown", (event) => {
+            if (event.key === "Enter" || event.key === " ") {
+              event.preventDefault();
+              openLightbox("images/" + file, img.alt);
+            }
+          });
           img.onerror = () => {
             img.style.display = "none";
           };
@@ -121,9 +129,54 @@
       }
     }
 
-    window.addEventListener("DOMContentLoaded", loadCollage);
+    function openLightbox(src, alt) {
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImage = document.getElementById("lightboxImage");
+      if (!lightbox || !lightboxImage) return;
+      lightboxImage.src = src;
+      lightboxImage.alt = alt || "Vergrote foto";
+      lightbox.classList.remove("hidden");
+      lightbox.setAttribute("aria-hidden", "false");
+      document.body.style.overflow = "hidden";
+    }
+
+    function closeLightbox() {
+      const lightbox = document.getElementById("lightbox");
+      const lightboxImage = document.getElementById("lightboxImage");
+      if (!lightbox || !lightboxImage) return;
+      lightbox.classList.add("hidden");
+      lightbox.setAttribute("aria-hidden", "true");
+      lightboxImage.src = "";
+      document.body.style.overflow = "";
+    }
+
+    window.addEventListener("DOMContentLoaded", () => {
+      loadCollage();
+
+      const lightbox = document.getElementById("lightbox");
+      const lightboxClose = document.getElementById("lightboxClose");
+
+      if (lightboxClose) {
+        lightboxClose.addEventListener("click", closeLightbox);
+      }
+
+      if (lightbox) {
+        lightbox.addEventListener("click", (event) => {
+          if (event.target === lightbox) closeLightbox();
+        });
+      }
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape") closeLightbox();
+      });
+    });
   </script>
 
+
+  <div id="lightbox" class="lightbox hidden" aria-hidden="true">
+    <button id="lightboxClose" class="lightbox-close" type="button" aria-label="Sluiten">×</button>
+    <img id="lightboxImage" class="lightbox-image" alt="Vergrote foto" />
+  </div>
 </body>
 
 </html>
