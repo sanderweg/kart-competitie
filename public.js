@@ -1,4 +1,4 @@
-import { db, DB_PATH, ref, onValue, formatDate, escapeHtml, buildSeasonRows } from "./firebase.js";
+import { db, DB_PATH, ref, onValue, escapeHtml, buildSeasonRows } from "./firebase.js";
 
 const connectionStatus = document.getElementById("connectionStatus");
 const seasonBody = document.getElementById("seasonBody");
@@ -34,52 +34,27 @@ function renderSeasonStand() {
     : '<tr><td colspan="6" class="empty">Nog geen data beschikbaar.</td></tr>';
 }
 
-
 function renderRaceTabs() {
   if (!raceTabs || !raceSelect) return;
-
-  const eligibleRaces = races.filter(race => !race.isDraft).map(race => ({ id: race.id, label: race.name }));
-
+  const eligibleRaces = races.filter(race => !race.isDraft);
   if (!eligibleRaces.length) {
     raceSelect.innerHTML = "";
     raceTabs.innerHTML = "";
     selectedRaceId = null;
     return;
   }
-
-  if (!selectedRaceId || !eligibleRaces.find(r => r.id === selectedRaceId)) {
-    selectedRaceId = eligibleRaces[0].id;
-  }
-
-  raceSelect.innerHTML = eligibleRaces.map(tab => `
-    <option value="${tab.id}" ${tab.id === selectedRaceId ? "selected" : ""}>${escapeHtml(tab.label)}</option>
-  `).join("");
-
-  raceTabs.innerHTML = eligibleRaces.map(tab => `
-    <button type="button" class="race-tab ${tab.id === selectedRaceId ? "active" : ""}" data-race-id="${tab.id}">
-      ${escapeHtml(tab.label)}
-    </button>
-  `).join("");
-
-  raceSelect.onchange = () => {
-    selectedRaceId = raceSelect.value;
-    renderRaceTabs();
-    renderRaceTable();
-  };
-
+  if (!selectedRaceId || !eligibleRaces.find(r => r.id === selectedRaceId)) selectedRaceId = eligibleRaces[0].id;
+  raceSelect.innerHTML = eligibleRaces.map(r => `<option value="${r.id}" ${r.id === selectedRaceId ? "selected" : ""}>${escapeHtml(r.name)}</option>`).join("");
+  raceTabs.innerHTML = eligibleRaces.map(r => `<button class="race-tab ${r.id === selectedRaceId ? "active" : ""}" data-id="${r.id}">${escapeHtml(r.name)}</button>`).join("");
+  raceSelect.onchange = () => { selectedRaceId = raceSelect.value; renderRaceTabs(); renderRaceTable(); };
   raceTabs.querySelectorAll(".race-tab").forEach(btn => {
-    btn.addEventListener("click", () => {
-      selectedRaceId = btn.dataset.raceId;
-      renderRaceTabs();
-      renderRaceTable();
-    });
+    btn.onclick = () => { selectedRaceId = btn.dataset.id; renderRaceTabs(); renderRaceTable(); };
   });
 }
 
 function renderRaceTable() {
   const rows = [];
   const sourceRaces = races.filter(race => !race.isDraft).filter(race => race.id === selectedRaceId);
-
   sourceRaces.forEach(race => {
     (race.results || []).forEach(result => {
       rows.push({
@@ -93,9 +68,7 @@ function renderRaceTable() {
       });
     });
   });
-
   sortRaceResultsWithTiebreak(rows);
-
   leaderboardBody.innerHTML = rows.length
     ? rows.map((row, index) => `
       <tr>
@@ -109,8 +82,6 @@ function renderRaceTable() {
     `).join("")
     : '<tr><td colspan="6" class="empty">Geen data voor deze selectie.</td></tr>';
 }
-
-
 
 onValue(ref(db, DB_PATH), snapshot => {
   const data = snapshot.val() || {};

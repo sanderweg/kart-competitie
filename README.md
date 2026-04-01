@@ -26,5 +26,4 @@ Je kunt dan de stand zien, maar pas na inloggen kun je wijzigen.
 - live leaderboard: race geschiedenis verwijderd
 - live leaderboard racefilter hersteld: dropdown en tabs zijn nu zichtbaar boven Race overzicht
 
-- tie-break toegevoegd: bij gelijke punten in een race vraagt het systeem om snelste tijd
-- de snelste tijd bepaalt daarna de volgorde in Race overzicht
+- tie-break popup hersteld: bij gelijke punten vraagt opslaan nu echt om snelste tijd
