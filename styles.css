@@ -126,3 +126,30 @@ button:hover,.btn:hover{transform:translateY(-1px)}button:disabled{opacity:.55;c
 .grid > .card.full{
   width: 100%;
 }
+
+
+/* FOTO COLLAGE */
+.photo-collage {
+  width: 100%;
+  overflow: hidden;
+  padding: 20px 0;
+}
+
+.collage-track {
+  display: flex;
+  width: max-content;
+  animation: scrollCollage 40s linear infinite;
+}
+
+.collage-track img {
+  width: 300px;
+  height: 180px;
+  object-fit: cover;
+  margin-right: 12px;
+  border-radius: 12px;
+}
+
+@keyframes scrollCollage {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
