@@ -158,3 +158,13 @@ button:hover,.btn:hover{transform:translateY(-1px)}button:disabled{opacity:.55;c
     height:140px;
   }
 }
+
+
+.collage-loading{
+  min-width:320px;
+  padding:20px 24px;
+  border:1px dashed rgba(255,255,255,.2);
+  border-radius:12px;
+  color:var(--muted);
+  background:rgba(255,255,255,.03);
+}

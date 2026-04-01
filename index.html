@@ -86,31 +86,44 @@
   </div>
 
   <script>
-    const images = [
-      "foto1.jpg",
-      "foto2.jpg",
-      "foto3.jpg",
-      "foto4.jpg",
-      "foto5.jpg"
-    ];
-
-    function loadCollage() {
+    async function loadCollage() {
       const track = document.getElementById("collageTrack");
       if (!track) return;
 
-      track.innerHTML = "";
+      track.innerHTML = "<div class='collage-loading'>Foto's laden...</div>";
 
-      [...images, ...images].forEach((file, index) => {
-        const img = document.createElement("img");
-        img.src = "images/" + file;
-        img.alt = "Zware Jongens foto " + (index + 1);
-        img.loading = "lazy";
-        track.appendChild(img);
-      });
+      try {
+        const response = await fetch("images/images.json");
+        if (!response.ok) throw new Error("images.json niet gevonden");
+
+        const images = await response.json();
+        const validImages = Array.isArray(images) ? images.filter(Boolean) : [];
+
+        if (!validImages.length) {
+          track.innerHTML = "<div class='collage-loading'>Nog geen foto's gevonden in images/images.json</div>";
+          return;
+        }
+
+        track.innerHTML = "";
+
+        [...validImages, ...validImages].forEach((file, index) => {
+          const img = document.createElement("img");
+          img.src = "images/" + file;
+          img.alt = "Zware Jongens foto " + (index + 1);
+          img.loading = "lazy";
+          img.onerror = () => {
+            img.style.display = "none";
+          };
+          track.appendChild(img);
+        });
+      } catch (error) {
+        track.innerHTML = "<div class='collage-loading'>Collage werkt pas als je in de map images een images.json bestand met je fotonamen zet.</div>";
+      }
     }
 
     window.addEventListener("DOMContentLoaded", loadCollage);
   </script>
+
 </body>
 
 </html>
