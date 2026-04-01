@@ -83,7 +83,55 @@
         </div>
       </div>
     </section>
+
+
+    <section class="card full homepage-agenda-card">
+      <div class="section-row">
+        <h2>🗓️ Race agenda</h2>
+        <span class="preview-pill">Live vanuit beheer</span>
+      </div>
+      <p class="sub">Alle geplande races verschijnen hier automatisch zodra ze in het beheerpaneel worden toegevoegd.</p>
+      <div id="homepageAgendaList" class="agenda-public-list"></div>
+    </section>
+
   </div>
+
+  <script type="module">
+    import { db, DB_PATH, ref, onValue, escapeHtml, formatDateTime } from "./firebase.js";
+
+    const homepageAgendaList = document.getElementById("homepageAgendaList");
+
+    function renderHomepageAgenda(items) {
+      if (!homepageAgendaList) return;
+      if (!items.length) {
+        homepageAgendaList.innerHTML = '<div class="empty">Er staan nog geen races in de agenda.</div>';
+        return;
+      }
+
+      homepageAgendaList.innerHTML = items.map(item => `
+        <article class="agenda-public-item">
+          <div>
+            <h3>${escapeHtml(item.name || item.title || "")}</h3>
+            <div class="race-meta">${escapeHtml(formatDateTime(item.date, item.time))}</div>
+            ${item.location ? `<div class="race-meta">${escapeHtml(item.location)}</div>` : ""}
+            ${item.note ? `<div class="race-meta">${escapeHtml(item.note)}</div>` : ""}
+          </div>
+        </article>
+      `).join("");
+    }
+
+    onValue(ref(db, DB_PATH), snapshot => {
+      const data = snapshot.val() || {};
+      const items = Object.values(data)
+        .filter(item => item && item.isDraft)
+        .sort((a, b) => {
+          const aKey = `${a.date || ""}T${a.time || "00:00"}`;
+          const bKey = `${b.date || ""}T${b.time || "00:00"}`;
+          return new Date(aKey) - new Date(bKey);
+        });
+      renderHomepageAgenda(items);
+    });
+  </script>
 
   <script>
     async function loadCollage() {

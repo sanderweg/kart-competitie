@@ -13,6 +13,7 @@ export const firebaseConfig = {
 };
 
 export const DB_PATH = "kartCompetitie/races";
+export const CALENDAR_PATH = "kartCompetitie/calendar";
 export const POINTS_MAP = {0:0,1:25,2:22,3:20,4:19,5:18,6:17,7:16,8:15,9:14,10:13,11:12,12:11,13:10,14:9,15:8,16:7,17:6,18:5,19:4,20:3,21:2,22:1};
 
 export const app = initializeApp(firebaseConfig);
@@ -138,4 +139,13 @@ export function buildSeasonRows(races) {
     (a.bestSprint === "-" ? 999 : Number(a.bestSprint.replace("P", ""))) - (b.bestSprint === "-" ? 999 : Number(b.bestSprint.replace("P", ""))) ||
     a.driver.localeCompare(b.driver, "nl")
   );
+}
+
+
+export function formatDateTime(dateString, timeString = "") {
+  if (!dateString) return "Geen datum";
+  const date = new Date(dateString + "T" + (timeString || "00:00:00"));
+  const datePart = date.toLocaleDateString("nl-NL");
+  if (!timeString) return datePart;
+  return `${datePart} om ${timeString}`;
 }

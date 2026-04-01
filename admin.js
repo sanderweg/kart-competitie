@@ -1,7 +1,10 @@
-import { auth, db, DB_PATH, ref, push, set, remove, onValue, signOut, onAuthStateChanged, getPoints, formatDate, escapeHtml, mergeResults, buildSeasonRows } from "./firebase.js";
+import { auth, db, DB_PATH, ref, push, set, remove, onValue, signOut, onAuthStateChanged, getPoints, formatDate, formatDateTime, escapeHtml, mergeResults, buildSeasonRows } from "./firebase.js";
 
 const raceNameInput = document.getElementById("raceName");
 const raceDateInput = document.getElementById("raceDate");
+const raceTimeInput = document.getElementById("raceTime");
+const raceLocationInput = document.getElementById("raceLocation");
+const raceNoteInput = document.getElementById("raceNote");
 const sprint1DriversList = document.getElementById("sprint1DriversList");
 const sprint2DriversList = document.getElementById("sprint2DriversList");
 const messageEl = document.getElementById("message");
@@ -17,12 +20,14 @@ const logoutBtn = document.getElementById("logoutBtn");
 const addSprint1DriverBtn = document.getElementById("addSprint1DriverBtn");
 const addSprint2DriverBtn = document.getElementById("addSprint2DriverBtn");
 const saveRaceBtn = document.getElementById("saveRaceBtn");
+const saveDraftBtn = document.getElementById("saveDraftBtn");
 const resetFormBtn = document.getElementById("resetFormBtn");
 const exportBtn = document.getElementById("exportBtn");
 const clearAllBtn = document.getElementById("clearAllBtn");
 const driverSuggestions = document.getElementById("driverSuggestions");
 const raceTabs = document.getElementById("raceTabs");
 const raceSelect = document.getElementById("raceSelect");
+
 
 let races = [];
 let currentUser = null;
@@ -35,7 +40,7 @@ function setMessage(text, type = "") {
 }
 
 function setControlsEnabled(enabled) {
-  [raceNameInput, raceDateInput, addSprint1DriverBtn, addSprint2DriverBtn, saveRaceBtn, resetFormBtn, clearAllBtn].forEach(el => { if (el) el.disabled = !enabled; });
+  [raceNameInput, raceDateInput, raceTimeInput, raceLocationInput, raceNoteInput, addSprint1DriverBtn, addSprint2DriverBtn, saveRaceBtn, saveDraftBtn, resetFormBtn, clearAllBtn].forEach(el => { if (el) el.disabled = !enabled; });
   document.querySelectorAll(".driver-name,.driver-position,.remove-driver").forEach(el => { el.disabled = !enabled; });
 }
 
@@ -282,11 +287,15 @@ function sortRaceResultsWithTiebreak(rows) {
   return rows;
 }
 
+
 function loadRaceIntoForm(race) {
   if (!currentUser) return;
   editingRaceId = race.id;
   raceNameInput.value = race.name || "";
   raceDateInput.value = race.date || "";
+  if (raceTimeInput) raceTimeInput.value = race.time || "";
+  if (raceLocationInput) raceLocationInput.value = race.location || "";
+  if (raceNoteInput) raceNoteInput.value = race.note || "";
   sprint1DriversList.innerHTML = "";
   sprint2DriversList.innerHTML = "";
   (race.sprint1Drivers || []).forEach(driver => addDriverRow(sprint1DriversList, driver.name, driver.position));
@@ -298,6 +307,91 @@ function loadRaceIntoForm(race) {
   setMessage(`Je bewerkt nu: ${race.name}`, "success");
 }
 
+
+function collectRacePayload(validateForFinal = true) {
+  const raceName = raceNameInput.value.trim();
+  const raceDate = raceDateInput.value;
+  const raceTime = raceTimeInput?.value || "";
+  const raceLocation = String(raceLocationInput?.value || "").trim();
+  const raceNote = String(raceNoteInput?.value || "").trim();
+  const sprint1Drivers = getDriversFromList(sprint1DriversList);
+  const sprint2Drivers = getDriversFromList(sprint2DriversList);
+
+  if (!raceName) return { error: "Vul eerst een racenaam in." };
+  if (!raceDate) return { error: "Kies eerst een datum." };
+
+  if (validateForFinal) {
+    const sprint1Error = validateSprint(sprint1Drivers, "Sprint 1");
+    if (sprint1Error) return { error: sprint1Error };
+    const sprint2Error = validateSprint(sprint2Drivers, "Sprint 2");
+    if (sprint2Error) return { error: sprint2Error };
+  }
+
+  const normalizedSprint1 = sprint1Drivers
+    .filter(d => d.name !== "" || !Number.isNaN(d.position))
+    .map(d => ({
+      ...d,
+      position: Number.isNaN(d.position) ? "" : d.position,
+      points: Number.isNaN(d.position) ? 0 : d.points
+    }));
+
+  const normalizedSprint2 = sprint2Drivers
+    .filter(d => d.name !== "" || !Number.isNaN(d.position))
+    .map(d => ({
+      ...d,
+      position: Number.isNaN(d.position) ? "" : d.position,
+      points: Number.isNaN(d.position) ? 0 : d.points
+    }));
+
+  return {
+    raceName,
+    raceDate,
+    raceTime,
+    raceLocation,
+    raceNote,
+    normalizedSprint1,
+    normalizedSprint2
+  };
+}
+
+async function saveDraftRace() {
+  if (!currentUser) {
+    setMessage("Log eerst in om een concept op te slaan.", "error");
+    return;
+  }
+
+  try {
+    const payload = collectRacePayload(false);
+    if (payload.error) return setMessage(payload.error, "error");
+
+    const existingRace = editingRaceId ? races.find(r => r.id === editingRaceId) : null;
+    const results = existingRace?.results || [];
+    const raceId = editingRaceId || push(ref(db, DB_PATH)).key;
+
+    await set(ref(db, DB_PATH + "/" + raceId), {
+      id: raceId,
+      name: payload.raceName,
+      date: payload.raceDate,
+      time: payload.raceTime,
+      location: payload.raceLocation,
+      note: payload.raceNote,
+      sprint1Drivers: payload.normalizedSprint1,
+      sprint2Drivers: payload.normalizedSprint2,
+      results,
+      isDraft: true,
+      createdAt: existingRace?.createdAt || Date.now(),
+      createdBy: currentUser.email || currentUser.uid
+    });
+
+    const wasEditing = !!editingRaceId;
+    resetForm(false);
+    setMessage(wasEditing ? "Concept bijgewerkt." : "Concept opgeslagen. Deze race staat nu ook in de agenda.", "success");
+  } catch (error) {
+    console.error(error);
+    setMessage("Concept opslaan mislukt.", "error");
+  }
+}
+
 async function saveRace() {
   if (!currentUser) {
     setMessage("Log eerst in om races op te slaan.", "error");
@@ -305,41 +399,23 @@ async function saveRace() {
   }
 
   try {
-    const raceName = raceNameInput.value.trim();
-    const raceDate = raceDateInput.value;
-    const sprint1Drivers = getDriversFromList(sprint1DriversList);
-    const sprint2Drivers = getDriversFromList(sprint2DriversList);
+    const payload = collectRacePayload(true);
+    if (payload.error) return setMessage(payload.error, "error");
 
-    if (!raceName) return setMessage("Vul eerst een racenaam in.", "error");
-    if (!raceDate) return setMessage("Kies eerst een datum.", "error");
-
-    const sprint1Error = validateSprint(sprint1Drivers, "Sprint 1");
-    if (sprint1Error) return setMessage(sprint1Error, "error");
-    const sprint2Error = validateSprint(sprint2Drivers, "Sprint 2");
-    if (sprint2Error) return setMessage(sprint2Error, "error");
-
-    const normalizedSprint1 = sprint1Drivers.map(d => ({
-      ...d,
-      position: Number.isNaN(d.position) ? "" : d.position,
-      points: Number.isNaN(d.position) ? 0 : d.points
-    }));
-    const normalizedSprint2 = sprint2Drivers.map(d => ({
-      ...d,
-      position: Number.isNaN(d.position) ? "" : d.position,
-      points: Number.isNaN(d.position) ? 0 : d.points
-    }));
-
-    let results = mergeResults(normalizedSprint1, normalizedSprint2);
+    let results = mergeResults(payload.normalizedSprint1, payload.normalizedSprint2);
     const existingRace = editingRaceId ? races.find(r => r.id === editingRaceId) : null;
     results = applyFastestTimeTiebreak(results, existingRace);
 
     const raceId = editingRaceId || push(ref(db, DB_PATH)).key;
     await set(ref(db, DB_PATH + "/" + raceId), {
       id: raceId,
-      name: raceName,
-      date: raceDate,
-      sprint1Drivers: normalizedSprint1,
-      sprint2Drivers: normalizedSprint2,
+      name: payload.raceName,
+      date: payload.raceDate,
+      time: payload.raceTime,
+      location: payload.raceLocation,
+      note: payload.raceNote,
+      sprint1Drivers: payload.normalizedSprint1,
+      sprint2Drivers: payload.normalizedSprint2,
       results,
       isDraft: false,
       createdAt: Date.now(),
@@ -359,6 +435,9 @@ function resetForm(clearMessage = true) {
   editingRaceId = null;
   raceNameInput.value = "";
   raceDateInput.value = "";
+  if (raceTimeInput) raceTimeInput.value = "";
+  if (raceLocationInput) raceLocationInput.value = "";
+  if (raceNoteInput) raceNoteInput.value = "";
   sprint1DriversList.innerHTML = "";
   sprint2DriversList.innerHTML = "";
   addDriverRow(sprint1DriversList);
@@ -460,7 +539,8 @@ function renderHistory() {
         <div class="race-top">
           <div>
             <h3>${escapeHtml(race.name)}</h3>
-            <div class="race-meta">${formatDate(race.date)} · 2 sprint races van 10 minuten${race.isDraft ? " · Concept" : ""}</div>
+            <div class="race-meta">${escapeHtml(formatDateTime(race.date, race.time))} · 2 sprint races van 10 minuten${race.isDraft ? " · Concept" : ""}${race.location ? " · " + escapeHtml(race.location) : ""}</div>
+            ${race.note ? `<div class="race-meta">${escapeHtml(race.note)}</div>` : ""}
           </div>
           ${actions}
         </div>
@@ -526,6 +606,7 @@ function exportData() {
 addSprint1DriverBtn.addEventListener("click", () => addDriverRow(sprint1DriversList));
 addSprint2DriverBtn.addEventListener("click", () => addDriverRow(sprint2DriversList));
 saveRaceBtn.addEventListener("click", saveRace);
+saveDraftBtn.addEventListener("click", saveDraftRace);
 resetFormBtn.addEventListener("click", () => resetForm(true));
 cancelEditBtn.addEventListener("click", () => resetForm(true));
 exportBtn.addEventListener("click", exportData);
@@ -560,3 +641,4 @@ onValue(ref(db, ".info/connected"), snapshot => {
 });
 
 resetForm();
+
