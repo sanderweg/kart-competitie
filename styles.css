@@ -126,3 +126,35 @@ button:hover,.btn:hover{transform:translateY(-1px)}button:disabled{opacity:.55;c
 .grid > .card.full{
   width: 100%;
 }
+
+
+/* HOMEPAGE FOTO COLLAGE */
+.photo-collage{
+  width:100%;
+  overflow:hidden;
+  padding:0 0 24px;
+}
+.collage-track{
+  display:flex;
+  width:max-content;
+  animation:scrollCollage 40s linear infinite;
+}
+.collage-track img{
+  width:300px;
+  height:180px;
+  object-fit:cover;
+  margin-right:12px;
+  border-radius:12px;
+  flex-shrink:0;
+  box-shadow:0 8px 20px rgba(0,0,0,.24);
+}
+@keyframes scrollCollage{
+  0%{transform:translateX(0)}
+  100%{transform:translateX(-50%)}
+}
+@media (max-width:768px){
+  .collage-track img{
+    width:220px;
+    height:140px;
+  }
+}

@@ -9,9 +9,14 @@
 <body class="landing-body">
   <div class="landing-bg"></div>
   <div class="landing-shell">
+    
+    <section class="photo-collage">
+      <div class="collage-track" id="collageTrack"></div>
+    </section>
+
     <section class="landing-hero">
       <div class="landing-hero-left">
-        <p class="eyebrow">Kart Competitie</p>
+        <p class="eyebrow">Zware Jongens Competitie</p>
         <h1>🏁 Live races, seizoensstand en beheerdashboard</h1>
         <p class="sub large-sub">
           Volg alle sprintresultaten live, bekijk de seizoensstand en beheer de volledige competitie
@@ -43,52 +48,35 @@
       </div>
 
       <div class="landing-hero-right">
+        
         <div class="preview-card">
           <div class="preview-top">
-            <span class="preview-pill">Live overzicht</span>
+            <span class="preview-pill">Algemeen reglement</span>
             <span class="preview-dot"></span>
           </div>
 
           <h3>📜 Algemeen reglement</h3>
 
-<div class="preview-list">
-  <div class="preview-item">
-    <div class="preview-icon">🏁</div>
-    <div>
-      <strong>Zware Jongens competitie</strong>
-      <p>
-        Wij zijn een groep personen welke een zelfstandig kampioenschap organiseren
-        voor de zwaardere rijder, van oudsher "de Zware Jongens".
-      </p>
-    </div>
-  </div>
-
-  <div class="preview-item">
-    <div class="preview-icon">⚖️</div>
-    <div>
-      <strong>Gewichtsregel</strong>
-      <p>
-        100 kg startgewicht is verplicht bij aanvang van de wedstrijd.
-        (maximaal 25 kg straflood toegestaan)
-      </p>
-    </div>
-  </div>
-</div>
-
-
+          <div class="preview-list">
             <div class="preview-item">
-              <div class="preview-icon">📋</div>
+              <div class="preview-icon">🏁</div>
               <div>
-                <strong>Volg race overzichten</strong>
-                <p>Per driver zie je sprint 1, sprint 2 en het totaal aantal punten.</p>
+                <strong>Zware Jongens competitie</strong>
+                <p>
+                  Wij zijn een groep personen welke een zelfstandig kampioenschap organiseren
+                  voor de zwaardere rijder, van oudsher "de Zware Jongens".
+                </p>
               </div>
             </div>
 
             <div class="preview-item">
-              <div class="preview-icon">✏️</div>
+              <div class="preview-icon">⚖️</div>
               <div>
-                <strong>Beheer en bewerk uitslagen</strong>
-                <p>Admins kunnen races toevoegen, wijzigen, verwijderen en exporteren.</p>
+                <strong>Gewichtsregel</strong>
+                <p>
+                  100 kg. start gewicht is verplicht bij aanvang van de wedstrijd.
+                  Max 25 kg. straflood is toegestaan.
+                </p>
               </div>
             </div>
           </div>
@@ -96,5 +84,33 @@
       </div>
     </section>
   </div>
+
+  <script>
+    const images = [
+      "foto1.jpg",
+      "foto2.jpg",
+      "foto3.jpg",
+      "foto4.jpg",
+      "foto5.jpg"
+    ];
+
+    function loadCollage() {
+      const track = document.getElementById("collageTrack");
+      if (!track) return;
+
+      track.innerHTML = "";
+
+      [...images, ...images].forEach((file, index) => {
+        const img = document.createElement("img");
+        img.src = "images/" + file;
+        img.alt = "Zware Jongens foto " + (index + 1);
+        img.loading = "lazy";
+        track.appendChild(img);
+      });
+    }
+
+    window.addEventListener("DOMContentLoaded", loadCollage);
+  </script>
 </body>
+
 </html>
